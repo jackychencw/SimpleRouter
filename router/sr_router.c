@@ -79,9 +79,13 @@ void sr_handlepacket(struct sr_instance *sr,
 
   /* fill in code here */
   uint16_t packet_type = ethertype(packet);
-  printf(packet_type);
-  /* switch (packet_type)
+  switch (packet_type)
   {
-    case ()
-  */
+  case ethertype_arp:
+    printf("This is a arp packet");
+    break;
+  case ethertype_ip:
+    printf("This is an ip packet");
+    break;
+  }
 } /* end sr_ForwardPacket */
