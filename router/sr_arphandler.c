@@ -3,6 +3,6 @@
 
 #include <stdio.h>
 
-void sr_handle_spr_request()
+void sr_handle_arp_request()
 {
 }
