@@ -80,8 +80,8 @@ void sr_handlepacket(struct sr_instance *sr,
   /* fill in code here */
   uint16_t packet_type = ethertype(packet);
   printf(packet_type);
-  // switch (packet_type)
-  // {
-  //   case ()
-  // }
+  /* switch (packet_type)
+  {
+    case ()
+  */
 } /* end sr_ForwardPacket */
