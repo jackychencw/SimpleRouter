@@ -86,10 +86,10 @@ int sr_send_arprep(struct sr_instance *sr,
     memcpy(rep_arp_hder->ar_tha, origin_arp_hder->ar_tha, ETHER_ADDR_LEN);
     rep_arp_hder->ar_tip = origin_arp_hder->ar_sip;
 
+    printf("Following data for reply packet. \n");
     print_hdrs(packet, packet_size);
 
     int res = sr_send_packet(sr, packet, packet_size, iface->name);
-    printf("%d done\n", res);
     return res;
 }
 

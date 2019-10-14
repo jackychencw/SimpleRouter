@@ -78,7 +78,8 @@ void sr_handlepacket(struct sr_instance *sr,
   assert(interface);
 
   printf("*** -> Received packet of length %d \n", len);
-
+  printf("Request headers as following: \n");
+  print_hdrs(packet, len);
   /* fill in code here */
   uint16_t type = ethertype(packet);
   struct sr_if *sr_interface = sr_get_interface(sr, interface);
