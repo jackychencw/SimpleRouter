@@ -84,12 +84,12 @@ void sr_handlepacket(struct sr_instance *sr,
   switch (type)
   {
   case ethertype_arp:
+    print_hdr_arp(packet);
     printf("This is an arp packet\n");
     sr_handle_arp(sr,
                   packet,
                   len,
                   sr_interface);
-    print_hdr_arp(packet);
     break;
   case ethertype_ip:
     printf("This is an ip packet\n");
@@ -108,13 +108,6 @@ void sr_handle_arp(struct sr_instance *sr,
 {
   sr_ethernet_hdr_t *ethernet_hdr = get_ethernet_hdr(packet);
   sr_arp_hdr_t *arp_hdr = get_arp_hdr(packet);
-  fprintf(stderr, "ARP header\n");
-  fprintf(stderr, "\thardware type: %d\n", ntohs(arp_hdr->ar_hrd));
-  fprintf(stderr, "\tprotocol type: %d\n", ntohs(arp_hdr->ar_pro));
-  fprintf(stderr, "\thardware address length: %d\n", arp_hdr->ar_hln);
-  fprintf(stderr, "\tprotocol address length: %d\n", arp_hdr->ar_pln);
-  fprintf(stderr, "\topcode: %d\n", ntohs(arp_hdr->ar_op));
-
   if (!arp_sanity_check(len))
   {
     fprintf(stderr, "Packet doesn't meet minimum length requirement.\n");
