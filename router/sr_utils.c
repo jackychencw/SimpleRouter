@@ -198,8 +198,7 @@ void print_hdrs(uint8_t *buf, uint32_t length)
 
 sr_arp_hdr_t *get_arp_hdr(uint8_t *buf)
 {
-  sr_arp_hdr_t *arp_hdr = (sr_arp_hdr_t *)(buf);
-  return arp_hdr;
+  return (sr_arp_hdr_t *)(buf);
 }
 
 sr_ethernet_hdr_t *get_ethernet_hdr(uint8_t *buf)

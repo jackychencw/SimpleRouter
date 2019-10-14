@@ -107,7 +107,12 @@ void sr_handle_arp(struct sr_instance *sr,
 {
   sr_ethernet_hdr_t *ethernet_hdr = get_ethernet_hdr(packet);
   sr_arp_hdr_t *arp_hdr = get_arp_hdr(packet);
-  print_hdrs(packet, len);
+  fprintf(stderr, "ARP header\n");
+  fprintf(stderr, "\thardware type: %d\n", ntohs(arp_hdr->ar_hrd));
+  fprintf(stderr, "\tprotocol type: %d\n", ntohs(arp_hdr->ar_pro));
+  fprintf(stderr, "\thardware address length: %d\n", arp_hdr->ar_hln);
+  fprintf(stderr, "\tprotocol address length: %d\n", arp_hdr->ar_pln);
+  fprintf(stderr, "\topcode: %d\n", ntohs(arp_hdr->ar_op));
 
   if (!arp_sanity_check(len))
   {
