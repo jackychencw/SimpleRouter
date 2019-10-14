@@ -78,6 +78,10 @@ void sr_handlepacket(struct sr_instance *sr,
   printf("*** -> Received packet of length %d \n", len);
 
   /* fill in code here */
+  if(len < sizeof(struct sr_ethernet_hdr)){
+    printf("Ethernet frame too short")
+    return
+  }
   uint16_t packet_type = ethertype(packet);
   switch (packet_type)
   {
@@ -88,6 +92,17 @@ void sr_handlepacket(struct sr_instance *sr,
   case ethertype_ip:
     printf("This is an ip packet\n");
     /* TODO print_hdr_ip(packet);*/
-    break;
+    struct sr_ip_hdr *ip_hdr = (struct sr_ip_hdr *)(packet + sizeof(struct sr_ethernet_hdr));
+    if(ip_hdr->ip_hl < IP_IHL){
+      printf("IP header too short")
+      return
+    }
+    uint16_t ip_sum_check = ip_hdr->ip_sum;
+    ip_hdr->ip_sum = 0;
+    if(ip_sum_check != cksum(ip_hdr, sizeof(struct sr_ip_hdr))){
+      printf("IP checksum not correct")
+      return
+    }
+    // break;
   }
 } /* end sr_ForwardPacket */
