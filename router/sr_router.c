@@ -95,7 +95,7 @@ void sr_handlepacket(struct sr_instance *sr,
     /* TODO print_hdr_ip(packet);*/
     break;
   default:
-    fprintf("not IP or ARP\n");
+    fprintf(stderr, "not IP or ARP\n");
     return;
   }
 } /* end sr_ForwardPacket */
