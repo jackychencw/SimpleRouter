@@ -105,8 +105,9 @@ void sr_handle_arp(struct sr_instance *sr,
                    unsigned int len,
                    struct sr_if *sr_interface)
 {
-  sr_ethernet_hdr_t *ethetnet_hdr = get_ethernet_hdr(packet);
+  sr_ethernet_hdr_t *ethernet_hdr = get_ethernet_hdr(packet);
   sr_arp_hdr_t *arp_hdr = get_arp_hdr(packet);
+  print_hdrs(packet, len);
 
   if (!arp_sanity_check(len))
   {
@@ -120,7 +121,7 @@ void sr_handle_arp(struct sr_instance *sr,
   {
   case arp_op_request:
     /* Handle arp request*/
-    handle_arpreq(sr, ethetnet_hdr, arp_hdr, sr_interface);
+    handle_arpreq(sr, ethernet_hdr, arp_hdr, sr_interface);
     break;
   case arp_op_reply:
     /* Handle arp reply*/
