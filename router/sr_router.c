@@ -117,6 +117,7 @@ void sr_handle_arp(struct sr_instance *sr,
 
   uint16_t op_code = ntohs(arp_hdr->ar_op);
   printf("%u\n", (unsigned int)op_code);
+  Debug("Sensed an ARP frame, processing it\n");
   switch (op_code)
   {
   case arp_op_request:
