@@ -9,6 +9,7 @@
 #include "sr_protocol.h"
 #include "sr_arpcache.h"
 #include "sr_helpers.h"
+#include "sr_utils.h"
 
 struct sr_if *sr_rt_lookup(struct sr_instance *sr, uint32_t dest)
 {
@@ -61,7 +62,7 @@ int sr_send_arprep(struct sr_instance *sr,
                    sr_arp_hdr_t *origin_arp_hder,
                    struct sr_if *iface)
 {
-    printf("Sr send arp req\n");
+    printf("Sr send arp reply...\n");
     unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
     uint8_t *packet = (uint8_t *)malloc(packet_size);
 
@@ -84,6 +85,8 @@ int sr_send_arprep(struct sr_instance *sr,
     rep_arp_hder->ar_sip = iface->ip;
     memcpy(rep_arp_hder->ar_tha, origin_arp_hder->ar_tha, ETHER_ADDR_LEN);
     rep_arp_hder->ar_tip = origin_arp_hder->ar_sip;
+
+    print_hdrs(packet, packet_size);
 
     int res = sr_send_packet(sr, packet, packet_size, iface->name);
     return res;
@@ -128,7 +131,7 @@ int sr_send_arpreq(struct sr_instance *sr,
 void sr_handle_arp(struct sr_instance *sr,
                    uint8_t *packet,
                    unsigned int len,
-                   struct sr_if *sr_interface)
+                   struct sr_if *iface)
 {
     sr_ethernet_hdr_t *ethernet_hdr = get_ethernet_hdr(packet);
     sr_arp_hdr_t *arp_hdr = get_arp_hdr(packet);
@@ -147,7 +150,11 @@ void sr_handle_arp(struct sr_instance *sr,
         /* Handle arp request*/
         printf("Sensed [ARP request], handling ...\n\n");
         sr_arpcache_insert(&sr->cache, arp_hdr->ar_sha, arp_hdr->ar_sip);
-        sr_send_arprep(sr, ethernet_hdr, arp_hdr, sr_interface);
+        sr_send_arprep(sr, ethernet_hdr, arp_hdr, iface);
+        if (arp_hdr->ar_tip == iface->ip)
+        {
+            Debug("\tGot ARP request at interfce %s, constructing reply\n", iface->name);
+        }
         break;
     case arp_op_reply:
         /* Handle arp reply*/
