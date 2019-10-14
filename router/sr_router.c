@@ -140,7 +140,7 @@ void handle_arpreq(struct sr_instance *sr,
                    sr_arp_hdr_t *arp_hdr,
                    struct sr_if *sr_if)
 {
-  /* sr_arpcache_insert((&sr->cache, arp_hdr->ar_sha, arp_hdr->ar_sip); */
+  sr_arpcache_insert(&sr->cache, arp_hdr->ar_sha, arp_hdr->ar_sip);
   printf("Simple router sending arp request.\n");
   /* sr_send_arp_rep(sr, eth_hdr, arp_hdr, sr_if); */
 }
