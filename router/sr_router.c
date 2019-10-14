@@ -21,6 +21,7 @@
 #include "sr_protocol.h"
 #include "sr_arpcache.h"
 #include "sr_utils.h"
+#include "sr_arp_handler.h"
 
 /*---------------------------------------------------------------------
  * Method: sr_init(void)
@@ -92,99 +93,10 @@ void sr_handlepacket(struct sr_instance *sr,
     break;
   case ethertype_ip:
     printf("*** -> Received IP packet <- ***\n\n");
-    /* TODO print_hdr_ip(packet);*/
+    /* TODO sr_handle_IP;*/
     break;
   default:
     fprintf(stderr, "Invalid ethertype ... droping\n");
     return;
   }
 } /* end sr_ForwardPacket */
-
-
-int sr_send_arprep(struct sr_instance *sr,
-sr_ethernet_hdr_t *origin_ethernet_hder,
-                   sr_arp_hdr_t *origin_arp_hder,
-                   struct sr_if *received_interface)
-{
-  printf("Sr send arp req\n");
-  unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
-  uint8_t *packet = (uint8_t *)malloc(packet_size);
-
-  /* First assign pointer to ethernet header, then arp header */
-  sr_ethernet_hdr_t *reply_ethernet_hder = (sr_ethernet_hdr_t *) packet;
-  sr_arp_hdr_t *reply_arp_hder = (sr_arp_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
-  memcpy(reply_ethernet_hder->ether_dhost, origin_ethernet_hder->ether_shost, ETHER_ADDR_LEN);
-  memcpy(reply_ethernet_hder->ether_shost, received_interface->addr, ETHER_ADDR_LEN);
-  reply_ethernet_hder->ether_type = ntohs(ethertype_arp);
-
-  reply_arp_hder->ar_hrd = origin_arp_hder->ar_hrd;
-  reply_arp_hder->ar_pro = origin_arp_hder->ar_pro;
-  reply_arp_hder->ar_hln = origin_arp_hder->ar_hln;
-  reply_arp_hder->ar_pln = origin_arp_hder->ar_pln;
-  reply_arp_hder->ar_op = htons(arp_op_reply);
-  memcpy(reply_arp_hder->ar_sha, received_interface->addr, ETHER_ADDR_LEN);
-  reply_arp_hder->ar_sip = received_interface->ip;
-  memcpy(reply_arp_hder->ar_tha, origin_arp_hder->ar_tha, ETHER_ADDR_LEN);
-  reply_arp_hder->ar_tip = origin_arp_hder->ar_sip;
-
-  int res = sr_send_packet(sr, packet, packet_size, received_interface->name);
-  return res;
-}
-
-void sr_handle_arp(struct sr_instance *sr,
-                   uint8_t *packet,
-                   unsigned int len,
-                   struct sr_if *sr_interface)
-{
-  sr_ethernet_hdr_t *ethernet_hdr = get_ethernet_hdr(packet);
-  sr_arp_hdr_t *arp_hdr = get_arp_hdr(packet);
-
-  if (!arp_sanity_check(len))
-  {
-    fprintf(stderr, "Packet doesn't meet minimum length requirement.\n");
-    return;
-  }
-
-  uint16_t op_code = ntohs(arp_hdr->ar_op);
-
-  switch (op_code)
-  {
-  case arp_op_request:
-    /* Handle arp request*/
-    printf("Sensed [ARP request], handling ...\n\n");
-    sr_arpcache_insert(&sr->cache, arp_hdr->ar_sha, arp_hdr->ar_sip);
-    /* TODO: handle arp op request. */
-    break;
-  case arp_op_reply:
-    /* Handle arp reply*/
-    printf("Sensed [ARP reply], handling ...\n\n");
-    /* TODO: handle arp op reply. */
-    break;
-  default:
-    fprintf(stderr, "Invalid packet op code.\n");
-    return;
-  }
-}
-
-int sr_send_arpreq(struct sr_instance *sr, uint32_t destination)
-{
-  unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
-  uint8_t *packet = (uint8_t *)malloc(packet_size);
-  
-  /* First assign pointer to ethernet header, then arp header */
-  sr_ethernet_hdr_t *ethernet_hder = (sr_ethernet_hdr_t *) packet;
-  sr_arp_hdr_t *arp_hder = (sr_arp_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
-
-  /* TODO: Find interface for destination 
-  struct sr_if *sr_interface;
-
-  memset(ethernet_hder->ether_dhost, 0xff, ETHER_ADDR_LEN);
-  memcpy(ethernet_hder->ether_shost, sr_interface->addr, ETHER_ADDR_LEN);*/
-  return 1;
-
-}
-
-struct sr_if* sr_get_if_for_dhost(struct sr_instance *sr, uint32_t destination){
-  /*TODO*/
-}
-

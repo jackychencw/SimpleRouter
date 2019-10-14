@@ -45,8 +45,4 @@ void print_hdr_arp(uint8_t *buf);
 /* prints all headers, starting from eth */
 void print_hdrs(uint8_t *buf, uint32_t length);
 
-sr_arp_hdr_t *get_arp_hdr(uint8_t *packet);
-sr_ethernet_hdr_t *get_ethernet_hdr(uint8_t *buf);
-uint8_t arp_sanity_check(unsigned int frame_len);
-
 #endif /* -- SR_UTILS_H -- */
