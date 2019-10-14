@@ -84,14 +84,14 @@ void sr_handlepacket(struct sr_instance *sr,
   switch (type)
   {
   case ethertype_arp:
-    printf("*** -> Received arp packet <- ***\n");
+    printf("*** -> Received IP packet <- ***\n\n");
     sr_handle_arp(sr,
                   packet,
                   len,
                   sr_interface);
     break;
   case ethertype_ip:
-    printf("*** -> Received ip packet <- ***\n");
+    printf("*** -> Received IP packet <- ***\n\n");
     /* TODO print_hdr_ip(packet);*/
     break;
   default:
@@ -120,12 +120,12 @@ void sr_handle_arp(struct sr_instance *sr,
   {
   case arp_op_request:
     /* Handle arp request*/
-    printf("Sensed arp request, handling ...\n");
+    printf("Sensed [ARP request], handling ...\n\n");
     handle_arpreq(sr, ethernet_hdr, arp_hdr, sr_interface);
     break;
   case arp_op_reply:
     /* Handle arp reply*/
-    printf("Sensed arp reply, handling ...\n");
+    printf("Sensed [ARP reply], handling ...\n\n");
     handle_arprep(sr, arp_hdr, sr_interface);
     break;
   default:
