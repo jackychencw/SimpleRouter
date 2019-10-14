@@ -106,9 +106,8 @@ void sr_handle_arp(struct sr_instance *sr,
                    struct sr_if *sr_interface)
 {
   sr_ethernet_hdr_t *ethernet_hdr = get_ethernet_hdr(packet);
-  print_hdr_eth(packet);
+  print_hdrs(packet, len);
   sr_arp_hdr_t *arp_hdr = get_arp_hdr(packet);
-  print_hdr_arp(packet);
   if (!arp_sanity_check(len))
   {
     fprintf(stderr, "Packet doesn't meet minimum length requirement.\n");
