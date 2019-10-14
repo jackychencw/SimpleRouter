@@ -121,12 +121,11 @@ void sr_handle_arp(struct sr_instance *sr,
   case arp_op_request:
     /* Handle arp request*/
     printf("Sensed [ARP request], handling ...\n\n");
-    handle_arpreq(sr, ethernet_hdr, arp_hdr, sr_interface);
+    sr_arpcache_insert(&sr->cache, arp_hdr->ar_sha, arp_hdr->ar_sip);
     break;
   case arp_op_reply:
     /* Handle arp reply*/
     printf("Sensed [ARP reply], handling ...\n\n");
-    handle_arprep(sr, arp_hdr, sr_interface);
     break;
   default:
     fprintf(stderr, "Invalid packet op code.\n");
@@ -134,38 +133,19 @@ void sr_handle_arp(struct sr_instance *sr,
   }
 }
 
-/* Handle arp request, if is request, construct reply and send it back */
-void handle_arpreq(struct sr_instance *sr,
-                   sr_ethernet_hdr_t *eth_hdr,
+void send_arpreq(struct sr_instance *sr,
+                   sr_ethernet_hdr_t *ethernet_hdr,
                    sr_arp_hdr_t *arp_hdr,
-                   struct sr_if *sr_if)
+                   struct sr_if *sr_interface)
 {
-  sr_arpcache_insert(&sr->cache, arp_hdr->ar_sha, arp_hdr->ar_sip);
-  printf("Simple router sending arp request.\n");
-  /* sr_send_arp_rep(sr, eth_hdr, arp_hdr, sr_if); */
+  int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
+  uint8_t *rep = (uint8_t *)malloc(packet_size);
+
 }
 
-void sr_send_arp_rep(struct sr_instance *sr,
-                     sr_ethernet_hdr_t *eth_hdr,
-                     sr_arp_hdr_t *arp_hdr,
-                     struct sr_if *sr_if)
-{
-  /* int packet_size = sizeof(eth_hdr) + sizeof(arp_hdr); */
-  printf("Simple router sending arp reply.\n");
-  /* uint8_t *packet = (uint8_t *)malloc(packet_size); */
-}
-
-/* Handle arp reply, if is reply, save to cache and sendout request */
-void handle_arprep(struct sr_instance *sr,
+void send_arprep(struct sr_instance *sr,
                    sr_arp_hdr_t *arp_hder,
                    struct sr_if *rec_iface)
-{
-  printf("Simple router sending arp request.\n");
-}
-
-void sr_send_arp_req(struct sr_instance *sr,
-                     sr_arp_hdr_t *arp_hder,
-                     struct sr_if *rec_iface)
 {
   printf("Sr send arp req\n");
 }
