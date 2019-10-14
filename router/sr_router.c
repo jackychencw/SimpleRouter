@@ -84,18 +84,18 @@ void sr_handlepacket(struct sr_instance *sr,
   switch (type)
   {
   case ethertype_arp:
-    printf("This is an arp packet\n");
+    printf("*** -> Received arp packet <- ***\n");
     sr_handle_arp(sr,
                   packet,
                   len,
                   sr_interface);
     break;
   case ethertype_ip:
-    printf("This is an ip packet\n");
+    printf("*** -> Received ip packet <- ***\n");
     /* TODO print_hdr_ip(packet);*/
     break;
   default:
-    fprintf(stderr, "not IP or ARP\n");
+    fprintf(stderr, "Invalid ethertype ... droping\n");
     return;
   }
 } /* end sr_ForwardPacket */
@@ -106,8 +106,8 @@ void sr_handle_arp(struct sr_instance *sr,
                    struct sr_if *sr_interface)
 {
   sr_ethernet_hdr_t *ethernet_hdr = get_ethernet_hdr(packet);
-  print_hdrs(packet, len);
   sr_arp_hdr_t *arp_hdr = get_arp_hdr(packet);
+
   if (!arp_sanity_check(len))
   {
     fprintf(stderr, "Packet doesn't meet minimum length requirement.\n");
@@ -115,20 +115,21 @@ void sr_handle_arp(struct sr_instance *sr,
   }
 
   uint16_t op_code = ntohs(arp_hdr->ar_op);
-  printf("%u\n", (unsigned int)op_code);
-  Debug("Sensed an ARP frame, processing it\n");
+
   switch (op_code)
   {
   case arp_op_request:
     /* Handle arp request*/
+    printf("Sensed arp request, handling ...\n");
     handle_arpreq(sr, ethernet_hdr, arp_hdr, sr_interface);
     break;
   case arp_op_reply:
     /* Handle arp reply*/
+    printf("Sensed arp reply, handling ...\n");
     handle_arprep(sr, arp_hdr, sr_interface);
     break;
   default:
-    fprintf(stderr, "Wrong packet op code.\n");
+    fprintf(stderr, "Invalid packet op code.\n");
     return;
   }
 }
