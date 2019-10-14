@@ -89,6 +89,7 @@ void sr_handlepacket(struct sr_instance *sr,
                   packet,
                   len,
                   sr_interface);
+    print_hdr_arp(packet);
     break;
   case ethertype_ip:
     printf("This is an ip packet\n");
