@@ -140,7 +140,6 @@ void send_arpreq(struct sr_instance *sr,
 {
   int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
   uint8_t *rep = (uint8_t *)malloc(packet_size);
-
 }
 
 void send_arprep(struct sr_instance *sr,

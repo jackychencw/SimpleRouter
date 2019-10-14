@@ -37,6 +37,7 @@ void handle_arpreq(struct sr_instance *sr, struct sr_arpreq *request)
             printf("Less than 5 tiems sent, we keep trying.\n");
             request->sent = time(0);
             request->times_sent += 1;
+            printf("%u", request->times_sent);
         }
     }
     pthread_mutex_unlock(&sr->cache.lock);
