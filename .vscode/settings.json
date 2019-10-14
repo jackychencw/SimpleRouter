@@ -1,3 +1,9 @@
 {
-    "C_Cpp.errorSquiggles": "Disabled"
+    "C_Cpp.errorSquiggles": "Disabled",
+    "files.associations": {
+        "sr_if.h": "c",
+        "sr_arpcache.h": "c",
+        "sr_helpers.h": "c",
+        "sr_arp_handler.h": "c"
+    }
 }

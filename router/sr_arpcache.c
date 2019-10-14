@@ -10,38 +10,12 @@
 #include "sr_router.h"
 #include "sr_if.h"
 #include "sr_protocol.h"
+#include "sr_arp_handler.h"
 /* 
   This function gets called every second. For each request sent out, we keep
   checking whether we should resend an request or destroy the arp request.
   See the comments in the header file for an idea of what it should look like.
 */
-void handle_arpreq(struct sr_instance *sr, struct sr_arpreq *request)
-{
-    time_t now = time(0);
-    time_t sent = request->sent;
-    uint32_t times_sent = request->times_sent;
-    pthread_mutex_lock(&sr->cache.lock);
-
-    if (difftime(now, sent) > 1.0)
-    {
-        if (times_sent >= 5)
-        {
-            /* TODO: Send icmp host unreachable to source addr of all pkts waiting on 
-            this request*/
-            printf("More than 5 times sent, we should do something!\n");
-            sr_arpreq_destroy(&sr->cache, request);
-        }
-        else
-        {
-            /* sr_send_arpreq(sr, request->ip);*/
-            printf("Less than 5 tiems sent, we keep trying.\n");
-            request->sent = time(0);
-            request->times_sent += 1;
-        }
-    }
-    pthread_mutex_unlock(&sr->cache.lock);
-}
-
 void sr_arpcache_sweepreqs(struct sr_instance *sr)
 {
     /* Fill this in */

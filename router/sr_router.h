@@ -80,8 +80,6 @@ int sr_read_from_server(struct sr_instance *);
 void sr_init(struct sr_instance *);
 void sr_handlepacket(struct sr_instance *, uint8_t *, unsigned int, char *);
 void sr_handle_arp(struct sr_instance *sr, uint8_t *packet, unsigned int len, struct sr_if *rec_iface);
-int sr_send_arprep(struct sr_instance *sr, sr_ethernet_hdr_t *origin_ethernet_hder, sr_arp_hdr_t *origin_arp_hder, struct sr_if *received_interface);
-int sr_send_arpreq(struct sr_instance *sr, uint32_t destination);
 
 /* -- sr_if.c -- */
 void sr_add_interface(struct sr_instance *, const char *);
