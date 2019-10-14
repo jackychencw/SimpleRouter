@@ -1,5 +1,6 @@
 #include <sr_protocol.h>
 #include <sr_helpers.h>
+#include "sr_arp_handler.h"
 
 void sr_handle_arp(struct sr_instance *sr,
                    uint8_t *packet, unsigned int len, struct sr_if *rec_iface)
