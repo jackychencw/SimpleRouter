@@ -87,6 +87,7 @@ int sr_send_arprep(struct sr_instance *sr,
     rep_arp_hder->ar_tip = origin_arp_hder->ar_sip;
 
     print_hdrs(packet, packet_size);
+    printf("done\n");
 
     int res = sr_send_packet(sr, packet, packet_size, iface->name);
     return res;
