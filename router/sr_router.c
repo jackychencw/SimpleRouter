@@ -79,16 +79,16 @@ void sr_handlepacket(struct sr_instance *sr,
   printf("*** -> Received packet of length %d \n", len);
 
   /* fill in code here */
-  uint16_t packet_type = ethertype(packet);
-  struct sr_if *rec_iface = sr_get_interface(sr, interface);
-  switch (packet_type)
+  uint16_t type = ethertype(packet);
+  struct sr_if *sr_interface = sr_get_interface(sr, interface);
+  switch (type)
   {
   case ethertype_arp:
     printf("This is an arp packet\n");
     sr_handle_arp(sr,
                   packet,
                   len,
-                  rec_iface);
+                  sr_interface);
     break;
   case ethertype_ip:
     printf("This is an ip packet\n");
@@ -101,29 +101,33 @@ void sr_handlepacket(struct sr_instance *sr,
 } /* end sr_ForwardPacket */
 
 void sr_handle_arp(struct sr_instance *sr,
-                   uint8_t *packet, unsigned int len, struct sr_if *rec_iface)
+                   uint8_t *packet,
+                   unsigned int len,
+                   struct sr_if *sr_interface)
 {
-  sr_ethernet_hdr_t *eth_hdr = get_ethernet_hdr(packet);
+  sr_ethernet_hdr_t *ethetnet_hdr = get_ethernet_hdr(packet);
   sr_arp_hdr_t *arp_hdr = get_arp_hdr(packet);
 
   if (!arp_sanity_check(len))
   {
-    Debug("Packet did not meet minimun length.\n");
+    fprintf(stderr, "Packet doesn't meet minimum length requirement.\n");
     return;
   }
 
-  switch (ntohs(arp_hdr->ar_op))
+  uint16_t op_code = ntohs(arp_hdr->ar_op);
+  printf("%u\n", (unsigned int)op_code);
+  switch (op_code)
   {
   case arp_op_request:
     /* Handle arp request*/
-    handle_arpreq(sr, eth_hdr, arp_hdr, rec_iface);
+    handle_arpreq(sr, ethetnet_hdr, arp_hdr, sr_interface);
     break;
   case arp_op_reply:
     /* Handle arp reply*/
-    handle_arprep(sr, arp_hdr, rec_iface);
+    handle_arprep(sr, arp_hdr, sr_interface);
     break;
   default:
-    Debug("Wrong op code.\n");
+    fprintf(stderr, "Wrong packet op code.\n");
     return;
   }
 }
@@ -161,4 +165,5 @@ void sr_send_arp_req(struct sr_instance *sr,
                      sr_arp_hdr_t *arp_hder,
                      struct sr_if *rec_iface)
 {
+  printf("Sr send arp req\n");
 }
