@@ -20,6 +20,7 @@
 #include "sr_protocol.h"
 #include "sr_arpcache.h"
 #include "sr_utils.h"
+#include "sr_arp_handler.h"
 
 /*---------------------------------------------------------------------
  * Method: sr_init(void)
@@ -79,15 +80,22 @@ void sr_handlepacket(struct sr_instance *sr,
 
   /* fill in code here */
   uint16_t packet_type = ethertype(packet);
+  struct sr_if *rec_iface = sr_get_interface(sr, interface);
   switch (packet_type)
   {
   case ethertype_arp:
     printf("This is an arp packet\n");
-    print_hdr_arp(packet);
+    sr_handle_arp(sr,
+                  packet,
+                  len,
+                  rec_iface);
     break;
   case ethertype_ip:
     printf("This is an ip packet\n");
     /* TODO print_hdr_ip(packet);*/
     break;
+  default:
+    fprintf("not IP or ARP\n");
+    return;
   }
 } /* end sr_ForwardPacket */

@@ -11,22 +11,42 @@
 #include "sr_if.h"
 #include "sr_protocol.h"
 
-/* 
-  This function handles the pseudo code described in sr_arpcache.h
-*/
 void sr_arpcache_handle_req_sending(struct sr_instance *sr, struct sr_arpreq *req)
 {
+    /*
     time_t now = time(NULL);
-}
+    pthread_mutex_lock(&sr->cache.lock);
 
-void handle_arpreq()
-{
-}
+    if (difftime(now, req->sent) > 1.0)
+    {
+        Debug("\t\tARP req still pending, finding out whether to drop or send again\n");
 
-void handle_arprep()
-{
-}
+        if (req->times_sent >= 5)
+        {
+            Debug("Dropping ARP request and sending ICMP host unreachable to all waiting hosts\n");
 
+            struct sr_packet *cur_req_packet = req->packets;
+
+            while (cur_req_packet)
+            {
+                sr_send_icmp_t3_to(sr, cur_req_packet->buf,
+                                   icmp_protocol_type_dest_unreach, icmp_protocol_code_host_unreach,
+                                   sr_get_interface(sr, cur_req_packet->iface));
+
+                cur_req_packet = cur_req_packet->next;
+            }
+            sr_arpreq_destroy(&sr->cache, req);
+        }
+        else
+        {
+            sr_send_arp_req(sr, req->ip);
+            req->sent = time(NULL);
+            req->times_sent++;
+        }
+    }
+    pthread_mutex_unlock(&sr->cache.lock);
+    */
+}
 /* 
   This function gets called every second. For each request sent out, we keep
   checking whether we should resend an request or destroy the arp request.
@@ -39,7 +59,7 @@ void sr_arpcache_sweepreqs(struct sr_instance *sr)
     while (request)
     {
         struct sr_arpreq *next_request = (*request).next;
-        printf("request handling");
+        sr_arpcache_handle_req_sending(sr, request);
         request = next_request;
     }
 }
