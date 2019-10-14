@@ -33,11 +33,10 @@ void handle_arpreq(struct sr_instance *sr, struct sr_arpreq *request)
         }
         else
         {
-            /* TODO: Send arp request */
+            sr_send_arpreq(sr, request->ip);
             printf("Less than 5 tiems sent, we keep trying.\n");
             request->sent = time(0);
             request->times_sent += 1;
-            printf("adsofpjadio");
         }
     }
     pthread_mutex_unlock(&sr->cache.lock);
