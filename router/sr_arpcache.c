@@ -12,6 +12,22 @@
 #include "sr_protocol.h"
 
 /* 
+  This function handles the pseudo code described in sr_arpcache.h
+*/
+void sr_arpcache_handle_req_sending(struct sr_instance *sr, struct sr_arpreq *req)
+{
+    time_t now = time(NULL);
+}
+
+void handle_arpreq()
+{
+}
+
+void handle_arprep()
+{
+}
+
+/* 
   This function gets called every second. For each request sent out, we keep
   checking whether we should resend an request or destroy the arp request.
   See the comments in the header file for an idea of what it should look like.
@@ -27,7 +43,6 @@ void sr_arpcache_sweepreqs(struct sr_instance *sr)
         request = next_request;
     }
 }
-
 /* You should not need to touch the rest of this code. */
 
 /* Checks if an IP->MAC mapping is in the cache. IP is in network byte order.

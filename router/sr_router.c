@@ -82,12 +82,12 @@ void sr_handlepacket(struct sr_instance *sr,
   switch (packet_type)
   {
   case ethertype_arp:
-    printf("This is a arp packet\n");
+    printf("This is an arp packet\n");
     print_hdr_arp(packet);
     break;
   case ethertype_ip:
     printf("This is an ip packet\n");
-    print_hdr_ip(packet);
+    /* TODO print_hdr_ip(packet);*/
     break;
   }
 } /* end sr_ForwardPacket */
