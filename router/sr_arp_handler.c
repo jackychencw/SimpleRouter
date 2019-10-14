@@ -148,18 +148,15 @@ void sr_handle_arp(struct sr_instance *sr,
     switch (op_code)
     {
     case arp_op_request:
-        /* Handle arp request*/
+        /* Construct an arp reply and send it back. */
         printf("Sensed [ARP request], handling ...\n\n");
         sr_arpcache_insert(&sr->cache, arp_hdr->ar_sha, arp_hdr->ar_sip);
         sr_send_arprep(sr, ethernet_hdr, arp_hdr, iface);
-        if (arp_hdr->ar_tip == iface->ip)
-        {
-            Debug("\tGot ARP request at interfce %s, constructing reply\n", iface->name);
-        }
         break;
     case arp_op_reply:
-        /* Handle arp reply*/
+        /* Cache it, go through request queue and send it back. */
         printf("Sensed [ARP reply], handling ...\n\n");
+        sr_arpcache_insert(&sr->cache, arp_hdr->ar_sha, arp_hdr->ar_sip);
         /* TODO: handle arp op reply. */
         break;
     default:
