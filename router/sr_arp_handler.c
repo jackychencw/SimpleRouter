@@ -11,25 +11,6 @@
 #include "sr_helpers.h"
 #include "sr_utils.h"
 
-struct sr_if *sr_rt_lookup(struct sr_instance *sr, uint32_t dest)
-{
-    struct sr_rt *rt = sr->routing_table;
-    while (rt)
-    {
-        struct sr_rt *next = rt->next;
-        if (dest == rt->dest.s_addr)
-        {
-            return sr_get_interface(sr, rt->interface);
-        }
-        else
-        {
-            rt = next;
-        }
-    }
-    /* No interface found. */
-    return NULL;
-}
-
 void handle_arpreq(struct sr_instance *sr, struct sr_arpreq *request)
 {
     printf("\n\nhandle_arpreq\n\n");
