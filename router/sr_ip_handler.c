@@ -59,8 +59,8 @@ void sr_handle_ip(struct sr_instance *sr,
         ip_addr.s_addr = ip_dst;
 
         struct sr_rt *rt = sr_rt_lpm_lookup(sr, ip_addr);
-        struct sr_if *t_iface =sr_get_interface(sr, rt->interface);
-            if (t_iface)
+        struct sr_if *t_iface = sr_get_interface(sr, rt->interface);
+        if (t_iface)
         {
             printf("There is a match, about to check arp cache\n");
         }
