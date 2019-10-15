@@ -197,6 +197,5 @@ struct sr_rt *sr_rt_lpm_lookup(struct sr_instance *sr, struct in_addr dest)
         }
         rt = rt->next;
     }
-    printf("No lpm found\n");
     return lpm;
 }

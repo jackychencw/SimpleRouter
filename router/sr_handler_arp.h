@@ -1,5 +1,5 @@
-#ifndef SR_ARP_HANDLER_H
-#define SR_ARP_HANDLER_H
+#ifndef SR_HANDLER_ARP_H
+#define SR_HANDLER_ARP_H
 
 #include <netinet/in.h>
 #include <sys/time.h>

@@ -1,5 +1,5 @@
-#ifndef SR_IP_HANDLER_H
-#define SR_IP_HANDLER_H
+#ifndef SR_HANDLER_IP_H
+#define SR_HANDLER_IP_H
 
 #include <netinet/in.h>
 #include <sys/time.h>

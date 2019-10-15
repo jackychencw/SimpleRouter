@@ -21,8 +21,8 @@
 #include "sr_protocol.h"
 #include "sr_arpcache.h"
 #include "sr_utils.h"
-#include "sr_arp_handler.h"
-#include "sr_ip_handler.h"
+#include "sr_handler_arp.h"
+#include "sr_handler_ip.h"
 
 /*---------------------------------------------------------------------
  * Method: sr_init(void)
