@@ -84,7 +84,7 @@ int sr_send_icmp_reply(struct sr_instance *sr, uint8_t *buf, unsigned int buf_si
     sr_icmp_hdr_t *icmp_hdr = (sr_icmp_hdr_t *)get_icmp_hdr(buf);
     struct sr_if *target_iface = sr_rt_lookup_iface(sr, ip_hdr->ip_src);
 
-    add_ethernet_header(eth_hdr, eth_hdr->ether_shost, iface->addr, eth_hdr->ether_type);
+    add_ethernet_header(eth_hdr, eth_hdr->ether_shost, target_iface->addr, eth_hdr->ether_type);
     ip_hdr->ip_src = iface->ip;
     ip_hdr->ip_dst = ip_hdr->ip_src;
     add_icmp_header(icmp_hdr, type, code);
