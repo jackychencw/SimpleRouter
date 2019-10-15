@@ -50,7 +50,7 @@ void sr_handle_ip(struct sr_instance *sr,
     {
         printf("This is for me, but I haven't implemented how to handle it\n");
 
-        switch (ip_hdr->ip_p)
+        switch (ntohs(ip_hdr->ip_p))
         {
         case (ip_protocol_tcp | ip_protocol_udp): /*2. if it's tcp/udp, send ICMP port unreachable */
             sr_handle_icmp(sr, packet, len, iface, icmp_dest_unreachable_type, icmp_port_unreachable_code);
@@ -60,6 +60,7 @@ void sr_handle_ip(struct sr_instance *sr,
             sr_handle_icmp(sr, packet, len, iface, icmp_echo_reply_type, 0);
             break;
         default:
+            printf("No valid ip protocol found.\n");
             return;
         }
     }
