@@ -182,7 +182,8 @@ struct sr_rt *sr_rt_lpm_lookup(struct sr_instance *sr, struct in_addr dest)
 {
 
     struct sr_rt *rt = sr->routing_table;
-    struct sr_rt *lpm = NULL;
+    struct sr_rt *lpm;
+    lpm = NULL;
 
     unsigned int lpm_len = 0;
     while (rt)
@@ -197,6 +198,5 @@ struct sr_rt *sr_rt_lpm_lookup(struct sr_instance *sr, struct in_addr dest)
         rt = rt->next;
     }
     printf("No lpm found\n");
-    /* No interface found. */
     return lpm;
 }
