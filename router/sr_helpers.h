@@ -4,5 +4,6 @@
 sr_arp_hdr_t *get_arp_hdr(uint8_t *packet);
 sr_ethernet_hdr_t *get_ethernet_hdr(uint8_t *buf);
 uint8_t arp_sanity_check(unsigned int frame_len);
+uint8_t ip_sanity_check(sr_ip_hdr_t *ip_hdr, unsigned int len);
 
 #endif

@@ -3,6 +3,7 @@
 #include <string.h>
 #include "sr_protocol.h"
 #include "sr_helpers.h"
+#include "sr_utils.h"
 
 sr_arp_hdr_t *get_arp_hdr(uint8_t *buf)
 {
@@ -16,7 +17,7 @@ sr_ethernet_hdr_t *get_ethernet_hdr(uint8_t *buf)
 
 sr_ip_hdr_t *get_IP_hdr(uint8_t *buf)
 {
-    /*TODO*/
+    return (sr_ip_hdr_t *)(buf + sizeof(sr_ethernet_hdr_t));
 }
 
 sr_icmp_hdr_t *get_icmp_hdr(uint8_t *buf)
@@ -35,6 +36,8 @@ uint8_t arp_sanity_check(unsigned int len)
     return len >= min_len;
 }
 
-uint8_t ip_sanity_check(unsigned int len)
+uint8_t ip_sanity_check(sr_ip_hdr_t *ip_hdr, unsigned int len)
 {
+    int min_len = sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t);
+    return (cksum(ip_hdr, len) == ip_hdr->ip_sum) && (len >= min_len);
 }
