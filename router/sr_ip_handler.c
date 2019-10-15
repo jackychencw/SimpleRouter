@@ -53,32 +53,34 @@ void sr_handle_ip(struct sr_instance *sr,
 
         /*3. if it's tcp/udp, send ICMP port unreachable */
     }
+    /*4. if it's not for me */
     else
     {
         struct in_addr ip_addr;
         ip_addr.s_addr = ip_dst;
 
+        /*5. check routing table, perform lightweight packet marking */
         struct sr_rt *rt = sr_rt_lpm_lookup(sr, ip_addr);
         printf("finished finding rt\n");
+
+        /*8. if there is a match */
         if (rt)
         {
+            /*9. check if there is a arp cache exists */
             struct sr_if *t_iface = sr_get_interface(sr, rt->interface);
             if (t_iface)
             {
                 printf("There is a match, about to check arp cache\n");
             }
         }
+        /*6. if there isn't a match */
         else
         {
+            /*7. send ICMP net unreachable*/
             printf("There is no match, should send icmp net unreachable\n");
         }
     }
-    /*4. if it's not for me */
-    /*5. check routing table, perform lightweight packet marking */
-    /*6. if there isn't a match */
-    /*7. send ICMP net unreachable*/
-    /*8. if there is a match */
-    /*9. check if there is a arp cache exists */
+
     /*10. if no arp cache */
     /*11. send arp request and resent >5 times */
     /*12. if exists arp cache */
