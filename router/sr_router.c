@@ -78,8 +78,8 @@ void sr_handlepacket(struct sr_instance *sr,
   assert(interface);
 
   printf("*** -> Received packet of length %d \n", len);
-  printf("Request headers as following: \n");
-  print_hdrs(packet, len);
+  /* printf("Request headers as following: \n");
+  print_hdrs(packet, len); */
   /* fill in code here */
   uint16_t type = ethertype(packet);
   struct sr_if *sr_interface = sr_get_interface(sr, interface);
@@ -94,6 +94,7 @@ void sr_handlepacket(struct sr_instance *sr,
     break;
   case ethertype_ip:
     printf("*** -> Received IP packet <- ***\n\n");
+    printf("*** -> Function not implemented to handle IP request yet, please wait ... <- ***\n\n");
     /* TODO sr_handle_IP;*/
     break;
   default:

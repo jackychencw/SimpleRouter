@@ -114,10 +114,6 @@ uint8_t *create_arp_packet(uint8_t *sha, uint32_t sip, uint8_t *tha, uint32_t ti
     memcpy(arp_hder->ar_tha, tha, ETHER_ADDR_LEN);
     arp_hder->ar_tip = tip;
 
-    printf("Following data for reply packet. \n");
-    print_hdrs(packet, packet_size);
-    printf("\n\n");
-
     return packet;
 }
 
