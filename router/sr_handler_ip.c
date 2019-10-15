@@ -38,21 +38,14 @@ void sr_handle_ip(struct sr_instance *sr,
     sr_ethernet_hdr_t *eth_hdr = get_ethernet_hdr(packet);
     sr_ip_hdr_t *ip_hdr = get_ip_hdr(packet);
     uint32_t ip_dst = ip_hdr->ip_dst;
-    printf("Handling ip packet !!\n\n");
-    fprintf(stderr, "\tversion: %d\n", ip_hdr->ip_v);
-    fprintf(stderr, "\theader length: %d\n", ip_hdr->ip_hl);
-    fprintf(stderr, "\ttype of service: %d\n", ip_hdr->ip_tos);
-    fprintf(stderr, "\tlength: %d\n", ntohs(ip_hdr->ip_len));
-    fprintf(stderr, "\tid: %d\n", ntohs(ip_hdr->ip_id));
-    printf("\n\nfinished print ip hdr.\n");
     /*1. if it's for me */
     if (ip_dst == iface->ip)
     {
         printf("This is for me, but I haven't implemented how to handle it\n");
         uint8_t ip_protocol = ip_hdr->ip_p;
+        printf("%d\n", ip_protocol);
         switch (ip_protocol)
         {
-
         case (ip_protocol_icmp): /*3. if it's ICMP echo req, send echo reply */
             printf("Hello icmp\n");
             sr_handle_icmp(sr, packet, len, iface, icmp_echo_reply_type, 0);
