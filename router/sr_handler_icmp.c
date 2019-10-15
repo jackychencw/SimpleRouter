@@ -11,11 +11,12 @@
 #include "sr_helpers.h"
 #include "sr_utils.h"
 
-uint8_t *create_icmp_packet(uint8_t tha, uint8_t sha, struct sr_ip_hdr *dest_ip_hdr, uint8_t icmp_type, uint8_t icmp_code)
+uint8_t *create_icmp_packet(uint8_t *tha, uint8_t *sha, struct sr_ip_hdr *dest_ip_hdr, uint8_t icmp_type, uint8_t icmp_code)
 {
+    /*
     unsigned int icmp_len = sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t) + sizeof(sr_icmp_t3_hdr_t);
     uint8_t *icmp_packet = (uint8_t *)malloc(icmp_len);
-    sr_ethernet_hdr_t *eth_hdr = get_eth_hdr(icmp_packet);
+    sr_ethernet_hdr_t *eth_hdr = get_ethernet_hdr(icmp_packet);
     sr_ip_hdr_t *ip_hdr = get_ip_hdr(icmp_packet);
     sr_icmp_t3_hdr_t *icmp_hdr = get_icmp_t3_hdr(icmp_packet);
 
@@ -30,7 +31,7 @@ uint8_t *create_icmp_packet(uint8_t tha, uint8_t sha, struct sr_ip_hdr *dest_ip_
     ip_hdr->ip_off = htons(IP_DF);
     ip_hdr->ip_ttl = INIT_TTL;
     ip_hdr->ip_v = dest_ip_hdr->ip_v;
-    ip_hdr->ip_src = ;
+    ip_hdr->ip_src = 0;
     ip_hdr->ip_dst = tip;
     ip_hdr->ip_len = htons(icmp_len - sizeof(sr_ethernet_hdr_t));
     ip_hdr->ip_sum = 0;
@@ -40,9 +41,10 @@ uint8_t *create_icmp_packet(uint8_t tha, uint8_t sha, struct sr_ip_hdr *dest_ip_
     icmp_hdr->icmp_code = icmp_code;
     icmp_hdr->icmp_sum = 0;
     icmp_hdr->unused = 0;
-    memcpy(icmp_hdr->data, dest_ip_hdr);
+    memcpy(icmp_hdr->data, dest_ip_hdr, ETHER_ADDR_LEN);
 
-    return icmp_packet;
+    return icmp_packet; */
+    return NULL;
 }
 
 void handle_icmp_unreachable(struct sr_instance *sr)
@@ -134,7 +136,7 @@ void sr_handle_icmp(
         handle_icmp_echo_reply(sr);
         break;
     default:
-        Debug("ICMP type not recognized. %s\n", stderr);
-        return
+        printf("no valid type\n");
+        return;
     }
 }
