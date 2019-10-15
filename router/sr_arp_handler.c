@@ -69,28 +69,6 @@ void handle_arpreq(struct sr_instance *sr, struct sr_arpreq *request)
        arpreq_destroy(req)
 
    --*/
-void handle_arprep(struct sr_instance *sr,
-                   sr_arp_hdr_t *arp_hdr,
-                   struct sr_if *iface)
-{
-    /* Find request by id */
-    struct sr_arpreq *req = sr_arpcache_insert(&sr->cache,
-                                               arp_hdr->ar_sha,
-                                               arp_hdr->ar_sip);
-    if (req)
-    {
-        printf("\n\n\nHandling arp reply\n\n\n");
-        struct sr_packet *packet = req->packets;
-        while (packet)
-        {
-            struct sr_packet *next = packet->next;
-            uint8_t *buf = packet->buf;
-            sr_send_packet(sr, buf, packet->len, iface->name);
-            packet = next;
-        }
-    }
-    sr_arpreq_destroy(&sr->cache, req);
-}
 
 uint8_t *create_arp_packet(uint8_t *sha, uint32_t sip, uint8_t *tha, uint32_t tip, unsigned short opcode)
 {
@@ -117,44 +95,6 @@ uint8_t *create_arp_packet(uint8_t *sha, uint32_t sip, uint8_t *tha, uint32_t ti
     return packet;
 }
 
-int sr_send_arpreq(struct sr_instance *sr,
-                   sr_ethernet_hdr_t *ethernet_hdr,
-                   sr_arp_hdr_t *arp_hdr,
-                   struct sr_if *iface)
-{
-    printf("Sr send arp req\n");
-    unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
-    uint8_t *packet = (uint8_t *)malloc(packet_size);
-
-    sr_ethernet_hdr_t *req_eth_hder = (sr_ethernet_hdr_t *)packet;
-    sr_arp_hdr_t *req_arp_hder = (sr_arp_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
-
-    /*
-    Find interface to destination ip
-    */
-    struct sr_if *interface = sr_rt_lookup(sr, 1 /* TODO: Replace this */);
-    uint8_t *origin_sha = arp_hdr->ar_sha;
-    uint8_t *origin_tha = arp_hdr->ar_tha;
-
-    memset(req_eth_hder->ether_dhost, origin_sha, ETHER_ADDR_LEN);
-    memcpy(req_eth_hder->ether_shost, interface->addr, ETHER_ADDR_LEN);
-    req_eth_hder->ether_type = ntohs(ethertype_arp);
-
-    req_arp_hder->ar_hrd = arp_hdr->ar_hrd;
-    req_arp_hder->ar_pro = arp_hdr->ar_pro;
-    req_arp_hder->ar_hln = arp_hdr->ar_hln;
-    req_arp_hder->ar_pln = arp_hdr->ar_pln;
-    req_arp_hder->ar_op = htons(arp_op_reply);
-    memcpy(req_arp_hder->ar_sha, &iface->addr, ETHER_ADDR_LEN);
-    req_arp_hder->ar_sip = iface->ip;
-    memcpy(req_arp_hder->ar_tha, origin_sha, ETHER_ADDR_LEN);
-    req_arp_hder->ar_tip = arp_hdr->ar_sip;
-
-    int res = sr_send_packet(sr, packet, packet_size, iface->name);
-
-    return res;
-}
-
 void sr_handle_arp_op_req(struct sr_instance *sr, sr_ethernet_hdr_t *eth_hder, sr_arp_hdr_t *arp_hder, struct sr_if *interface)
 {
     unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
@@ -167,6 +107,31 @@ void sr_handle_arp_op_req(struct sr_instance *sr, sr_ethernet_hdr_t *eth_hder, s
     sr_send_packet(sr, reply_packet, packet_size, interface->name);
 }
 
+/* When receive an reply, fidn all cache that's related to this sha and send request */
+int sr_handle_arp_op_rep(struct sr_instance *sr,
+                         sr_ethernet_hdr_t *ethernet_hdr,
+                         sr_arp_hdr_t *arp_hdr,
+                         struct sr_if *iface)
+{
+    printf("Simple router handling arp request...\n");
+    struct sr_arpreq *req = sr_arpcache_insert(sr, arp_hdr->ar_sha, arp_hdr->ar_sip);
+    if (req)
+    {
+        struct sr_packet *packet = req->packets;
+        while (packet)
+        {
+            struct sr_packet *next = packet->next;
+            sr_ethernet_hdr_t *new_eth_hdr = (sr_ethernet_hdr_t *)packet->buf;
+
+            /* Replace destination host to reply's sha */
+            memcpy(new_eth_hdr->ether_dhost, arp_hdr->ar_sha, ETHER_ADDR_LEN);
+            sr_send_packet(sr, packet, packet->len, packet->iface);
+            packet = next;
+        }
+    }
+    sr_arpreq_destroy(&sr->cache, req);
+}
+
 void sr_handle_arp(struct sr_instance *sr,
                    uint8_t *packet,
                    unsigned int len,
@@ -175,6 +140,8 @@ void sr_handle_arp(struct sr_instance *sr,
     sr_ethernet_hdr_t *ethernet_hdr = get_ethernet_hdr(packet);
     sr_arp_hdr_t *arp_hdr = get_arp_hdr(packet);
     /* print_hdrs(packet, len); */
+
+    /* Do sanity check on arp packet */
     if (!arp_sanity_check(len))
     {
         fprintf(stderr, "Packet doesn't meet minimum length requirement.\n");
