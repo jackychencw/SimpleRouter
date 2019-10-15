@@ -22,7 +22,7 @@ void sr_handle_ip(struct sr_instance *sr,
 
     if (!ip_sanity_check(ip_hdr, len))
     {
-        printf("ERROR: ip packet didn't pass sanity check...", stderr);
+        printf("ERROR: ip packet didn't pass sanity check...");
         return;
     }
 
