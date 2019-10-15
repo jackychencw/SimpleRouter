@@ -32,7 +32,6 @@ void sr_ip_packet_forward(struct sr_instance *sr,
     if (!entry)
     {
         printf("It's not cached\n");
-        /* foward packet */
         uint8_t *arpreq = create_arp_packet(src_iface->addr, src_iface->ip, tar_iface->addr, tar_iface->ip, arp_op_request);
         int count;
         for (count = 0; count < 5; count++)
@@ -46,6 +45,7 @@ void sr_ip_packet_forward(struct sr_instance *sr,
         add_ethernet_header(eth_hdr, eth_hdr->ether_dhost, src_iface->addr, eth_hdr->ether_type);
         add_ip_header(ip_hdr, len, ip_hdr->ip_hl, ip_hdr->ip_v, ip_hdr->ip_tos, ip_hdr->ip_p, src_iface->ip, ip_hdr->ip_dst);
         sr_send_packet(sr, packet, len, src_iface->name);
+        print_hdrs(packet, len);
     }
 }
 
@@ -107,8 +107,8 @@ void sr_handle_ip(struct sr_instance *sr,
             struct sr_if *target_iface = sr_get_interface(sr, rt->interface);
             if (target_iface)
             {
-                sr_ip_packet_forward(sr, ip_hdr, eth_hdr, packet, len, iface, target_iface);
                 printf("There is a match, about to check arp cache\n");
+                sr_ip_packet_forward(sr, ip_hdr, eth_hdr, packet, len, iface, target_iface);
             }
         }
         /*8. if there isn't a match */
