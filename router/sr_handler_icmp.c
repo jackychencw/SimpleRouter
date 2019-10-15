@@ -79,7 +79,7 @@ int sr_handle_icmp_t3(struct sr_instance *sr,
 
 int sr_handle_icmp_reply(struct sr_instance *sr, uint8_t *buf, unsigned int buf_size, uint8_t type, uint8_t code, struct sr_if *iface)
 {
-    sr_ethernet_hdr_t *eth_hdr = get_ethernet_hdr(buf);
+    sr_ethernet_hdr_t *eth_hdr = buf;
     sr_ip_hdr_t *ip_hdr = get_ip_hdr(buf);
     sr_icmp_hdr_t *icmp_hdr = get_icmp_hdr(buf);
     struct sr_if *target_iface = sr_rt_lookup_iface(sr, ip_hdr->ip_src);
