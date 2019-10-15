@@ -153,16 +153,14 @@ void sr_handle_arp(struct sr_instance *sr,
     switch (op_code)
     {
     case arp_op_request:
-        /* Construct an arp reply and send it back. */
         printf("Sensed [ARP request], handling ...\n\n");
-        sr_arpcache_insert(&sr->cache, arp_hdr->ar_sha, arp_hdr->ar_sip);
+        /* Construct an arp reply and send it back. */
         sr_handle_arp_op_req(sr, ethernet_hdr, arp_hdr, iface);
         break;
     case arp_op_reply:
-        /* Cache it, go through request queue and send it back. */
         printf("Sensed [ARP reply], handling ...\n\n");
-        sr_arpcache_insert(&sr->cache, arp_hdr->ar_sha, arp_hdr->ar_sip);
-        /* TODO: handle arp op reply. */
+        /* Cache it, go through request queue and send it back. */
+        sr_handle_arp_op_rep(sr, ethernet_hdr, arp_hdr, iface);
         break;
     default:
         fprintf(stderr, "Invalid packet op code.\n");
