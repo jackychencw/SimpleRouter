@@ -99,8 +99,8 @@ uint8_t *create_arp_packet(uint8_t *sha, uint32_t sip, uint8_t *tha, uint32_t ti
     uint8_t *packet = (uint8_t *)malloc(packet_size);
     sr_ethernet_hdr_t *eth_hder = (sr_ethernet_hdr_t *)packet;
     sr_arp_hdr_t *arp_hder = (sr_arp_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
-    memcpy(eth_hder->ether_dhost, htons(tha), ETHER_ADDR_LEN);
-    memcpy(eth_hder->ether_shost, htons(sha), ETHER_ADDR_LEN);
+    memcpy(eth_hder->ether_dhost, tha, ETHER_ADDR_LEN);
+    memcpy(eth_hder->ether_shost, sha, ETHER_ADDR_LEN);
     eth_hder->ether_type = htons(ethertype_arp);
 
     arp_hder->ar_hrd = htons(arp_hrd_ethernet);
