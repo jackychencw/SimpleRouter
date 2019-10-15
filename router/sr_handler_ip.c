@@ -49,15 +49,16 @@ void sr_handle_ip(struct sr_instance *sr,
     if (ip_dst == iface->ip)
     {
         printf("This is for me, but I haven't implemented how to handle it\n");
-
         switch (ntohs(ip_hdr->ip_p))
         {
-        case (ip_protocol_tcp | ip_protocol_udp): /*2. if it's tcp/udp, send ICMP port unreachable */
-            sr_handle_icmp(sr, packet, len, iface, icmp_dest_unreachable_type, icmp_port_unreachable_code);
-            break;
 
         case (ip_protocol_icmp): /*3. if it's ICMP echo req, send echo reply */
+            printf("Hello icmp\n");
             sr_handle_icmp(sr, packet, len, iface, icmp_echo_reply_type, 0);
+            break;
+        case (ip_protocol_tcp | ip_protocol_udp): /*2. if it's tcp/udp, send ICMP port unreachable */
+            printf("hello udp/tcp\n");
+            sr_handle_icmp(sr, packet, len, iface, icmp_dest_unreachable_type, icmp_port_unreachable_code);
             break;
         default:
             printf("No valid ip protocol found.\n");
