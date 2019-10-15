@@ -91,12 +91,11 @@ void handle_arprep(struct sr_instance *sr,
     }
     sr_arpreq_destroy(&sr->cache, req);
 }
-,
 
-    int sr_send_arprep(struct sr_instance *sr,
-                       sr_ethernet_hdr_t *origin_ethernet_hder,
-                       sr_arp_hdr_t *origin_arp_hder,
-                       struct sr_if *iface)
+int sr_send_arprep(struct sr_instance *sr,
+                   sr_ethernet_hdr_t *origin_ethernet_hder,
+                   sr_arp_hdr_t *origin_arp_hder,
+                   struct sr_if *iface)
 {
     printf("Sr send arp reply...\n");
     unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
