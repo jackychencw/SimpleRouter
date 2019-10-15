@@ -67,6 +67,21 @@ int sr_read_from_server(struct sr_instance* );
 /* -- sr_router.c -- */
 void sr_init(struct sr_instance* );
 void sr_handlepacket(struct sr_instance* , uint8_t * , unsigned int , char* );
+struct sr_rt *lpm_entry(struct sr_rt *rtable, uint32_t dst_ip);
+void do_ethernet_header();
+void do_ip_header();
+void do_icmp();
+
+/* -- sr_arpcache.c -- */
+struct sr_arpentry *sr_arpcache_lookup(struct sr_arpcache *cache, uint32_t ip);
+struct sr_arpreq *sr_arpcache_queuereq(struct sr_arpcache *cache,
+                         uint32_t ip,
+                         uint8_t *packet,               /* borrowed */
+                         unsigned int packet_len,
+                         char *iface);
+
+/* -- sr_arp_handler.c -- */
+void handle_arpreq(struct sr_instance *sr, struct sr_arpreq *request);
 
 /* -- sr_if.c -- */
 void sr_add_interface(struct sr_instance* , const char* );
