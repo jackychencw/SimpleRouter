@@ -108,13 +108,13 @@ void sr_handle_arp_op_req(struct sr_instance *sr, sr_ethernet_hdr_t *eth_hder, s
 }
 
 /* When receive an reply, fidn all cache that's related to this sha and send request */
-int sr_handle_arp_op_rep(struct sr_instance *sr,
-                         sr_ethernet_hdr_t *ethernet_hdr,
-                         sr_arp_hdr_t *arp_hdr,
-                         struct sr_if *iface)
+void sr_handle_arp_op_rep(struct sr_instance *sr,
+                          sr_ethernet_hdr_t *ethernet_hdr,
+                          sr_arp_hdr_t *arp_hdr,
+                          struct sr_if *iface)
 {
     printf("Simple router handling arp request...\n");
-    struct sr_arpreq *req = sr_arpcache_insert(sr, arp_hdr->ar_sha, arp_hdr->ar_sip);
+    struct sr_arpreq *req = sr_arpcache_insert(&(sr->cache), arp_hdr->ar_sha, arp_hdr->ar_sip);
     if (req)
     {
         struct sr_packet *packet = req->packets;
@@ -125,7 +125,7 @@ int sr_handle_arp_op_rep(struct sr_instance *sr,
 
             /* Replace destination host to reply's sha */
             memcpy(new_eth_hdr->ether_dhost, arp_hdr->ar_sha, ETHER_ADDR_LEN);
-            sr_send_packet(sr, packet, packet->len, packet->iface);
+            sr_send_packet(sr, packet->buf, packet->len, packet->iface);
             packet = next;
         }
     }
