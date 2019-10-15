@@ -53,6 +53,7 @@ int sr_handle_icmp_t3(struct sr_instance *sr,
                       uint8_t icmp_code,
                       struct sr_if *rec_iface)
 {
+    printf("handling icmp t3\n");
     unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t) + sizeof(sr_icmp_t3_hdr_t);
     uint8_t *packet = (uint8_t *)malloc(packet_size);
     sr_ethernet_hdr_t *eth_hdr = (sr_ethernet_hdr_t *)packet;
