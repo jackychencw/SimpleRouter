@@ -73,7 +73,7 @@ int sr_handle_icmp_t3(struct sr_instance *sr,
                   iface->ip,
                   target_ip_hdr->ip_src);
     add_icmp_t3_header(icmp_t3_hdr, icmp_type, icmp_code, (uint8_t *)target_ip_hdr);
-    print_hdrs(packet);
+    print_hdrs(packet, packet_size);
     int res = sr_send_packet(sr, packet, packet_size, iface->name);
     return res;
 }
