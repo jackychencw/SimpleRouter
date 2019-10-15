@@ -29,9 +29,9 @@ void sr_ip_packet_forward(struct sr_instance *sr,
     /*11. send arp request and resent >5 times */
     /*12. if exists arp cache */
     /*13. send frame to next hope */
-    if (entry)
+    if (!entry)
     {
-        printf("It's cached!\n");
+        printf("It's not cached\n");
         /* foward packet */
         uint8_t *arpreq = create_arp_packet(src_iface->addr, src_iface->ip, tar_iface->addr, tar_iface->ip, arp_op_request);
         int count;
@@ -42,6 +42,7 @@ void sr_ip_packet_forward(struct sr_instance *sr,
     }
     else
     {
+        printf("it's cached");
         add_ethernet_header(eth_hdr, eth_hdr->ether_dhost, src_iface->addr, eth_hdr->ether_type);
         add_ip_header(ip_hdr, len, ip_hdr->ip_hl, ip_hdr->ip_v, ip_hdr->ip_tos, ip_hdr->ip_p, src_iface->ip, ip_hdr->ip_dst);
         sr_send_packet(sr, packet, len, src_iface->name);
