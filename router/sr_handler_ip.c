@@ -74,6 +74,7 @@ void sr_handle_ip(struct sr_instance *sr,
         else
         {
             /*9. send ICMP net unreachable*/
+            sr_handle_icmp(sr, packet, len, iface, sr_icmp_dest_unreachable_code, icmp_net_unreachable_code);
             printf("There is no match, should send icmp net unreachable\n");
         }
     }
