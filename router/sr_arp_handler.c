@@ -32,6 +32,7 @@ struct sr_if *sr_rt_lookup(struct sr_instance *sr, uint32_t dest)
 
 void handle_arpreq(struct sr_instance *sr, struct sr_arpreq *request)
 {
+    printf("\n\nhandle_arpreq\n\n");
     time_t now = time(0);
     time_t sent = request->sent;
     uint32_t times_sent = request->times_sent;
@@ -78,6 +79,7 @@ void handle_arprep(struct sr_instance *sr,
                                                arp_hdr->ar_sip);
     if (req)
     {
+        printf("\n\n\nHandling arp reply\n\n\n");
         struct sr_packet *packet = req->packets;
         while (packet)
         {
@@ -89,11 +91,12 @@ void handle_arprep(struct sr_instance *sr,
     }
     sr_arpreq_destroy(&sr->cache, req);
 }
+,
 
-int sr_send_arprep(struct sr_instance *sr,
-                   sr_ethernet_hdr_t *origin_ethernet_hder,
-                   sr_arp_hdr_t *origin_arp_hder,
-                   struct sr_if *iface)
+    int sr_send_arprep(struct sr_instance *sr,
+                       sr_ethernet_hdr_t *origin_ethernet_hder,
+                       sr_arp_hdr_t *origin_arp_hder,
+                       struct sr_if *iface)
 {
     printf("Sr send arp reply...\n");
     unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
