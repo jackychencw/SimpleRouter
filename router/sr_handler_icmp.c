@@ -83,11 +83,8 @@ int sr_handle_icmp_reply(struct sr_instance *sr, uint8_t *buf, unsigned int buf_
     sr_ip_hdr_t *ip_hdr = (sr_ip_hdr_t *)get_ip_hdr(buf);
     sr_icmp_hdr_t *icmp_hdr = (sr_icmp_hdr_t *)get_icmp_hdr(buf);
     struct sr_if *target_iface = sr_rt_lookup_iface(sr, ip_hdr->ip_src);
-
-    print_addr_eth(eth_hdr->ether_dhost);
     memcpy(eth_hdr->ether_dhost, eth_hdr->ether_shost, ETHER_ADDR_LEN);
-    print_addr_eth(eth_hdr->ether_dhost);
-    memcpy(eth_hdr->ether_shost, target_iface->addr, ETHER_ADDR_LEN);
+    /*memcpy(eth_hdr->ether_shost, target_iface->addr, ETHER_ADDR_LEN);*/
     print_addr_eth(eth_hdr->ether_dhost);
     ip_hdr->ip_dst = ip_hdr->ip_src;
     ip_hdr->ip_src = iface->ip;
