@@ -199,3 +199,17 @@ struct sr_rt *sr_rt_lpm_lookup(struct sr_instance *sr, struct in_addr dest)
     }
     return lpm;
 }
+
+struct sr_if *sr_rt_lookup_iface(struct sr_instance *sr, uint32_t dest_ip)
+{
+    struct sr_rt *rt = sr->routing_table;
+    while (rt)
+    {
+        uint32_t rt_dest_ip = rt->mask.s_addr & dest_ip;
+        if (rt_dest_ip == rt->dest.s_addr)
+        {
+            return sr_get_interface(sr, rt->interface);
+        }
+    }
+    return NULL;
+}

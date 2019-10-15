@@ -59,7 +59,9 @@ void add_ip_header(sr_ip_hdr_t *ip_hdr,
                    unsigned int ip_hl,
                    unsigned int ip_v,
                    uint8_t ip_tos,
-                   uint8_t ip_p)
+                   uint8_t ip_p,
+                   uint32_t ip_src,
+                   uint32_t ip_dst)
 {
     ip_hdr->ip_hl = ip_hl;
     ip_hdr->ip_v = ip_v;
@@ -69,12 +71,25 @@ void add_ip_header(sr_ip_hdr_t *ip_hdr,
     ip_hdr->ip_off = htons(IP_DF);
     ip_hdr->ip_ttl = INIT_TTL;
     ip_hdr->ip_p = ip_p;
+    ip_hdr->ip_src = ip_src;
+    ip_hdr->ip_dst = ip_dst;
     ip_hdr->ip_sum = 0;
+    ip_hdr->ip_sum = cksum(ip_hdr, sizeof(sr_ip_hdr_t));
 }
 
-void add_icmp_msg(sr_icmp_hdr_t *icmp_hdr, uint8_t type, uint8_t code)
+void add_icmp_t3_header(sr_icmp_t3_hdr_t *icmp_t3_hdr, uint8_t type, uint8_t code, uint8_t *data)
 {
-    icmp_hdr->icmp_type = type;
+    icmp_t3_hdr->icmp_type = type;
+    icmp_t3_hdr->icmp_code = code;
+    memcpy(icmp_t3_hdr->data, data, ICMP_DATA_SIZE);
+    icmp_t3_hdr->icmp_sum = 0;
+    icmp_t3_hdr->icmp_sum = cksum(icmp_t3_hdr, sizeof(sr_icmp_t3_hdr_t));
+}
+
+void add_icmp_header(sr_icmp_hdr_t *icmp_hdr, uint8_t type, uint8_t code)
+{
     icmp_hdr->icmp_code = code;
+    icmp_hdr->icmp_type = type;
     icmp_hdr->icmp_sum = 0;
+    icmp_hdr->icmp_sum = cksum(icmp_hdr, sizeof(sr_icmp_hdr_t));
 }

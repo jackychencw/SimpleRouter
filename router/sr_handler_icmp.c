@@ -47,74 +47,51 @@ uint8_t *create_icmp_packet(uint8_t *tha, uint8_t *sha, struct sr_ip_hdr *dest_i
     return NULL;
 }
 
-void handle_icmp_unreachable(struct sr_instance *sr)
+int sr_send_icmp_t3(struct sr_instance *sr,
+                    uint8_t *buf,
+                    uint8_t icmp_type,
+                    uint8_t icmp_code,
+                    struct sr_if *rec_iface)
 {
-    /*
-    unsigned int icmp_len = sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t) + sizeof(sr_icmp_t3_hdr_t);
-    uint8_t *icmp_packet = (uint8_t *)malloc(icmp_len);
+    unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t) + sizeof(sr_icmp_t3_hdr_t);
+    uint8_t *packet = (uint8_t *)malloc(packet_size);
+    sr_ethernet_hdr_t *eth_hdr = get_ethernet_hdr(packet);
+    sr_ip_hdr_t *ip_hdr = get_ip_hdr(packet);
+    sr_icmp_t3_hdr_t *icmp_t3_hdr = get_icmp_t3_hdr(packet);
 
+    sr_ethernet_hdr_t *target_eth_hdr = get_ethernet_hdr(buf);
+    sr_ip_hdr_t *target_ip_hdr = get_ip_hdr(buf);
+    struct sr_if *iface = sr_rt_lookup_iface(sr, target_ip_hdr->ip_src);
 
-    icmp_hdr.icmp_type = htons(icmp_dest_unreachable_type);
-    icmp_hdr.icmp_code = code;
-    icmp_hdr.unused = 0;
-    icmp_hdr.icmp_sum = 0;
+    add_ethernet_header(eth_hdr, target_eth_hdr->ether_shost, iface->addr, ethertype_ip);
+    add_ip_header(ip_hdr, packet_size,
+                  target_ip_hdr->ip_hl,
+                  target_ip_hdr->ip_v,
+                  target_ip_hdr->ip_tos,
+                  target_ip_hdr->ip_p,
+                  iface->ip,
+                  target_ip_hdr->ip_src);
+    add_icmp_t3_header(icmp_t3_hdr, icmp_type, icmp_code, (uint8_t *)target_ip_hdr);
 
-
-    error_ip_hdr = (struct sr_ip_hdr *)packet;
-    ip_hdr.ip_hl = ICMP_IP_HDR_LEN;
-    ip_hdr.ip_v = ip_version_4;
-    ip_hdr.ip_tos = 0;
-    ip_hdr.ip_id = error_ip_hdr->ip_id;
-    ip_hdr.ip_off = htons(IP_DF);
-    ip_hdr.ip_ttl = DEFAULT_TTL;
-    ip_hdr.ip_p = ip_protocol_icmp;
-    ip_hdr.ip_sum = 0;
-    ip_hdr.ip_dst = error_ip_hdr->ip_src;
-    dst = error_ip_hdr->ip_src;
-    rt = sr_longest_prefix_match(sr, ip_in_addr(ip_hdr.ip_dst));
-    if (rt == 0)
-        return;
-
-    interface = sr_get_interface(sr, (const char *)rt->interface);
-    ip_hdr.ip_src = interface->ip;
-
-    icmp_len = ip_ihl(error_ip_hdr) + ICMP_COPIED_DATAGRAM_DATA_LEN + sizeof(struct sr_icmp_hdr);
-    total_len = icmp_len + ICMP_IP_HDR_LEN_BYTES;
-    ip_hdr.ip_len = htons(total_len);
-
-    ip_hdr.ip_sum = cksum(&ip_hdr, ICMP_IP_HDR_LEN_BYTES);
-
-    new_pkt = malloc(total_len);
-    memcpy(new_pkt, &ip_hdr, ICMP_IP_HDR_LEN_BYTES);
-    memcpy(new_pkt + ICMP_IP_HDR_LEN_BYTES, &icmp_hdr, sizeof(struct sr_icmp_hdr));
-    memcpy(new_pkt + ICMP_IP_HDR_LEN_BYTES + sizeof(struct sr_icmp_hdr),
-           error_ip_hdr,
-           ip_ihl(error_ip_hdr) + ICMP_COPIED_DATAGRAM_DATA_LEN);
-
-    */
+    int res = sr_send_packet(sr, packet, packet_size, iface->name);
+    return res;
 }
 
-void handle_icmp_echo_reply(struct sr_instance *sr, struct sr_if *iface)
+int sr_send_icmp_reply(struct sr_instance *sr, uint8_t *buf, unsigned int buf_size, uint8_t type, uint8_t code, struct sr_if *iface)
 {
-    /* Update the IP header fields.
-    error_ip_hdr = (struct sr_ip_hdr *)packet;
-    dst = error_ip_hdr->ip_src;
-    error_ip_hdr->ip_src = error_ip_hdr->ip_dst;
-    error_ip_hdr->ip_dst = dst;
+    sr_ethernet_hdr_t *eth_hdr = (sr_ethernet_hdr_t *)get_ethernet_hdr(buf);
+    sr_ip_hdr_t *ip_hdr = (sr_ip_hdr_t *)get_ip_hdr(buf);
+    sr_icmp_hdr_t *icmp_hdr = (sr_icmp_hdr_t *)get_icmp_hdr(buf);
+    struct sr_if *target_iface = sr_rt_lookup_iface(sr, ip_hdr->ip_src);
 
-
-    icmp_hdr_ptr = icmp_header(error_ip_hdr);
-    icmp_hdr_ptr->icmp_sum = 0;
-    icmp_hdr_ptr->icmp_code = code;
-    icmp_hdr_ptr->icmp_type = type;
-
-
-    total_len = ip_len(error_ip_hdr);
-    new_pkt = malloc(total_len);
-    memcpy(new_pkt, error_ip_hdr, total_len);
-
-    icmp_len = total_len - ICMP_IP_HDR_LEN;
-    */
+    add_ethernet_header(eth_hdr, eth_hdr->ether_shost, iface->addr, eth_hdr->ether_type);
+    ip_hdr->ip_src = iface->ip;
+    ip_hdr->ip_dst = ip_hdr->ip_src;
+    add_icmp_header(icmp_hdr, type, code);
+    int res = sr_send_packet(sr, buf, buf_size, target_iface->name);
+    printf("Echo reply handled.");
+    print_hdrs(buf, buf_size);
+    return res;
 }
 
 void sr_handle_icmp(
@@ -129,11 +106,11 @@ void sr_handle_icmp(
     {
     case (icmp_dest_unreachable_type):
         printf("ICMP destination unreachable, handling.\n");
-        handle_icmp_unreachable(sr);
+        sr_send_icmp_t3(sr, packet, type, code, iface);
         break;
     case (icmp_echo_reply_type):
         printf("ICMP echo reply, handling.\n");
-        handle_icmp_echo_reply(sr, iface);
+        sr_send_icmp_reply(sr, packet, len, type, code, iface);
         break;
     default:
         printf("no valid type\n");

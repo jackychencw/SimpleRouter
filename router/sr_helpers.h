@@ -14,6 +14,9 @@ void add_ip_header(sr_ip_hdr_t *ip_hdr,
                    unsigned int ip_hl,
                    unsigned int ip_v,
                    uint8_t ip_tos,
-                   uint8_t ip_p);
-void add_icmp_msg(sr_icmp_hdr_t *icmp_hdr, uint8_t type, uint8_t code);
+                   uint8_t ip_p,
+                   uint32_t ip_src,
+                   uint32_t ip_dst);
+void add_icmp_t3_header(sr_icmp_t3_hdr_t *icmp_t3_hdr, uint8_t type, uint8_t code, uint8_t *data);
+void add_icmp_header(sr_icmp_hdr_t *icmp_hdr, uint8_t type, uint8_t code);
 #endif

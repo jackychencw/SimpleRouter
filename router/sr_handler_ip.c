@@ -26,8 +26,11 @@ void sr_handle_ip(struct sr_instance *sr,
         return;
     }
 
-    ip_hdr->ip_ttl -= 1;
-    ip_hdr->ip_sum = cksum(ip_hdr, sizeof(sr_ip_hdr_t));
+    if (ip_hdr->ip_ttl <= 0)
+    {
+        printf("ERROR: ip packet ttl expired... \n");
+        return;
+    }
 
     /*1. if it's for me */
     if (ip_dst == iface->ip)
