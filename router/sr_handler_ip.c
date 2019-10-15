@@ -52,8 +52,8 @@ void sr_handle_ip(struct sr_instance *sr,
 
         switch (ip_hdr->ip_p)
         {
-        case (ip_protocol_tcp || ip_protocol_udp): /*2. if it's tcp/udp, send ICMP port unreachable */
-            is ' sr_handle_icmp(sr, packet, len, iface, icmp_dest_unreachable_type, icmp_port_unreachable_code);
+        case (ip_protocol_tcp | ip_protocol_udp): /*2. if it's tcp/udp, send ICMP port unreachable */
+            sr_handle_icmp(sr, packet, len, iface, icmp_dest_unreachable_type, icmp_port_unreachable_code);
             break;
 
         case (ip_protocol_icmp): /*3. if it's ICMP echo req, send echo reply */
@@ -67,7 +67,7 @@ void sr_handle_ip(struct sr_instance *sr,
     else
     {
         struct in_addr ip_addr;
-            ip_addr->s_addr = ip_dst;
+        ip_addr.s_addr = ip_dst;
 
         /*5. check routing table, perform lightweight packet marking */
         struct sr_rt *rt = sr_rt_lpm_lookup(sr, ip_addr);
