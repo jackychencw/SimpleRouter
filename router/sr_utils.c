@@ -27,7 +27,6 @@ uint16_t ethertype(uint8_t *buf)
 
 uint8_t ip_protocol(uint8_t *buf)
 {
-  printf("dsaoifdsajpiofsdj\n");
   sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(buf);
   return iphdr->ip_p;
 }

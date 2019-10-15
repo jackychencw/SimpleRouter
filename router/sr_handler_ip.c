@@ -41,11 +41,7 @@ void sr_handle_ip(struct sr_instance *sr,
     /*1. if it's for me */
     if (ip_dst == iface->ip)
     {
-        printf("This is for me, but I haven't implemented how to handle it\n");
-        uint8_t ip_proto = ip_protocol(packet + sizeof(sr_ethernet_hdr_t));
-        printf("asdfjopadsjfodsip\n");
-        printf("%d\n", ip_proto);
-        switch (ip_proto)
+        switch (ip_protocol(packet + sizeof(sr_ethernet_hdr_t)))
         {
         case (ip_protocol_icmp): /*3. if it's ICMP echo req, send echo reply */
             printf("Hello icmp\n");
