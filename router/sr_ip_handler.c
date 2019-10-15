@@ -29,8 +29,6 @@ struct sr_if *sr_rt_lookup(struct sr_instance *sr, uint32_t dest)
     return NULL;
 }
 
-struct sr_if *sr_rt_lmp_lookup() { return NULL; }
-
 void sr_handle_ip(struct sr_instance *sr,
                   uint8_t *packet,
                   unsigned int len,
@@ -47,6 +45,7 @@ void sr_handle_ip(struct sr_instance *sr,
     fprintf(stderr, "\tid: %d\n", ntohs(ip_hdr->ip_id));
     printf("\n\nfinished print ip hdr.\n");
     /*1. if it's for me */
+
     if (ip_dst == iface->ip)
     {
         printf("This is for me, but i have implemented how to handle it\n");
@@ -56,8 +55,12 @@ void sr_handle_ip(struct sr_instance *sr,
     }
     else
     {
-        struct sr_if *t_iface = sr_rt_lookup(sr, ip_dst);
-        if (t_iface)
+        struct in_addr ip_addr;
+        ip_addr.s_addr = ip_dst;
+
+        struct sr_rt *rt = sr_rt_lpm_lookup(sr, ip_addr);
+        struct sr_if *t_iface =sr_get_interface(sr, rt->interface);
+            if (t_iface)
         {
             printf("There is a match, about to check arp cache\n");
         }
