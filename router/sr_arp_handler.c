@@ -139,7 +139,7 @@ int sr_send_arpreq(struct sr_instance *sr,
     */
     struct sr_if *interface = sr_rt_lookup(sr, 1 /* TODO: Replace this */);
 
-    memset(req_eth_hder->ether_dhost, 0xff, ETHER_ADDR_LEN);
+    memset(req_eth_hder->ether_dhost, arp_hdr->ar_sha, ETHER_ADDR_LEN);
     memcpy(req_eth_hder->ether_shost, interface->addr, ETHER_ADDR_LEN);
     req_eth_hder->ether_type = ntohs(ethertype_arp);
 
@@ -150,7 +150,7 @@ int sr_send_arpreq(struct sr_instance *sr,
     req_arp_hder->ar_op = htons(arp_op_reply);
     memcpy(req_arp_hder->ar_sha, iface->addr, ETHER_ADDR_LEN);
     req_arp_hder->ar_sip = iface->ip;
-    memcpy(req_arp_hder->ar_tha, arp_hdr->ar_tha, ETHER_ADDR_LEN);
+    memcpy(req_arp_hder->ar_tha, arp_hdr->ar_sha, ETHER_ADDR_LEN);
     req_arp_hder->ar_tip = arp_hdr->ar_sip;
 
     int res = sr_send_packet(sr, packet, packet_size, iface->name);
