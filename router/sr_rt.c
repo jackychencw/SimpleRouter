@@ -194,6 +194,7 @@ struct sr_rt *sr_rt_lpm_lookup(struct sr_instance *sr, struct in_addr dest)
             lpm = rt;
             lpm_len = length;
         }
+        rt = rt->next;
     }
     /* No interface found. */
     return lpm;
