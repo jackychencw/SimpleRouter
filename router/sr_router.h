@@ -68,9 +68,9 @@ int sr_read_from_server(struct sr_instance* );
 void sr_init(struct sr_instance* );
 void sr_handlepacket(struct sr_instance* , uint8_t * , unsigned int , char* );
 struct sr_rt *lpm_entry(struct sr_rt *rtable, uint32_t dst_ip);
-void do_ethernet_header();
-void do_ip_header();
-void do_icmp();
+void do_ethernet_header(uint8_t *packet, sr_ethernet_hdr_t *eth_hdr, struct sr_if *interface);
+void do_ip_header(uint8_t *packet, sr_ip_hdr_t *ip_hdr,  unsigned int len,struct sr_if *interface);
+void do_icmp_msg(uint8_t *packet, sr_icmp_hdr_t *icmp_hdr, sr_ip_hdr_t *ip_hdr, int type, int code);
 
 /* -- sr_arpcache.c -- */
 struct sr_arpentry *sr_arpcache_lookup(struct sr_arpcache *cache, uint32_t ip);

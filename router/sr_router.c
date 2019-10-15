@@ -112,39 +112,17 @@ void sr_handlepacket(struct sr_instance *sr,
     struct sr_arpcache *arp_cache = &sr->cache;
 
     if(ip_hdr->ip_ttl <= 1){
-      /* ICMP header */
       unsigned int icmp_len = sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t) + sizeof(sr_icmp_t3_hdr_t);
       uint8_t *packet_icmp = (uint8_t *)malloc(icmp_len);
-      /* Ethernet header */
-      sr_ethernet_hdr_t *eth_hdr_upd = (sr_ethernet_hdr_t *)packet_icmp;
-      memcpy(eth_hdr_upd->ether_dhost, eth_hdr->ether_shost, ETHER_ADDR_LEN);
-      memcpy(eth_hdr_upd->ether_shost, get_itf->addr, ETHER_ADDR_LEN);
-      eth_hdr_upd->ether_type = eth_hdr->ether_type;
-      /* IP header */
-      sr_ip_hdr_t *ip_hdr_upd = (sr_ip_hdr_t *)((unsigned char *)packet_icmp + sizeof(sr_ethernet_hdr_t));
-      ip_hdr_upd->ip_hl = ip_hdr->ip_hl;
-      ip_hdr_upd->ip_v = ip_hdr->ip_v;
-      ip_hdr_upd->ip_tos = ip_hdr->ip_tos;
-      ip_hdr_upd->ip_len = htons(icmp_len - sizeof(sr_ethernet_hdr_t));
-      ip_hdr_upd->ip_id = 0;
-      ip_hdr_upd->ip_off = htons(IP_DF);
-      ip_hdr_upd->ip_ttl = INIT_TTL;
-      ip_hdr_upd->ip_p = ip_protocol_icmp;
-      ip_hdr_upd->ip_sum = 0;
-      uint16_t ip_sum_upd = cksum(ip_hdr, sizeof(sr_ip_hdr_t));
-      ip_hdr_upd->ip_sum = ip_sum_upd;
-      ip_hdr_upd->ip_src = get_itf->ip;
-      ip_hdr_upd->ip_dst = ip_hdr->ip_src;
+
       /* ICMP header */
-      sr_icmp_t3_hdr_t *icmp_hdr = (sr_icmp_t3_hdr_t *)((unsigned char *)packet_icmp + sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t));
-      icmp_hdr->icmp_type = 11;
-      icmp_hdr->icmp_code = 0;
-      icmp_hdr->icmp_sum = 0;
-      uint16_t icmp_sum_upd = cksum(icmp_hdr, sizeof(sr_icmp_t3_hdr_t));
-      icmp_hdr->icmp_sum = icmp_sum_upd;
-      icmp_hdr->unused = 0;
-      icmp_hdr->next_mtu = 0;
-      memcpy(icmp_hdr->data, ip_hdr, ICMP_DATA_SIZE);
+      do_ethernet_header(packet_icmp, eth_hdr, get_itf);
+
+      /* IP header */
+      do_ip_header(packet_icmp, ip_hdr, icmp_len, get_itf);
+
+      /* ICMP header */
+      do_icmp_msg(packet_icmp, NULL, ip_hdr, 11, 0);
 
       struct sr_arpentry *arp_entry = sr_arpcache_lookup(arp_cache, ip_hdr->ip_src);
       if(arp_entry){
@@ -179,44 +157,26 @@ void sr_handlepacket(struct sr_instance *sr,
             struct sr_if *lm_entry_itf = sr_get_interface(sr, lm_entry->interface);
             if(arp_entry){
               /* Ethernet header */
-              memcpy(eth_hdr->ether_dhost, eth_hdr->ether_shost, ETHER_ADDR_LEN);
-              memcpy(eth_hdr->ether_shost, lm_entry_itf->addr, ETHER_ADDR_LEN);
+              do_ethernet_header(NULL, eth_hdr, lm_entry_itf);
+
               /* IP header */
-              ip_hdr->ip_off = htons(IP_DF);
-              ip_hdr->ip_ttl = INIT_TTL;
-              ip_hdr->ip_sum = 0;
-              uint16_t ip_sum_check = cksum(ip_hdr, sizeof(sr_ip_hdr_t));
-              ip_hdr->ip_sum = ip_sum_check;
-              uint32_t ip_dst_upd = ip_hdr->ip_src;
-              ip_hdr->ip_src = ip_hdr->ip_dst;
-              ip_hdr->ip_dst = ip_dst_upd;
+              do_ip_header(NULL, ip_hdr, 0, NULL);
+
               /* ICMP header */
-              icmp_hdr->icmp_type = 0;
-              icmp_hdr->icmp_code = 0;
-              icmp_hdr->icmp_sum = 0;
-              uint16_t icmp_sum_check = cksum(icmp_hdr, sizeof(sr_icmp_hdr_t));
-              icmp_hdr->icmp_sum = icmp_sum_check;
+              do_icmp_msg(NULL, icmp_hdr, NULL, 0, 0);
+
               sr_send_packet(sr, packet, len, lm_entry_itf->name);
               return;
             }else{
               /* Ethernet header */
-              memcpy(eth_hdr->ether_dhost, eth_hdr->ether_shost, ETHER_ADDR_LEN);
-              memcpy(eth_hdr->ether_shost, get_itf->addr, ETHER_ADDR_LEN);
+              do_ethernet_header(NULL, eth_hdr, get_itf);
+
               /* IP header */
-              ip_hdr->ip_off = htons(IP_DF);
-              ip_hdr->ip_ttl = INIT_TTL;
-              ip_hdr->ip_sum = 0;
-              uint16_t ip_sum_check = cksum(ip_hdr, sizeof(sr_ip_hdr_t));
-              ip_hdr->ip_sum = ip_sum_check;
-              uint32_t ip_dst_upd = ip_hdr->ip_src;
-              ip_hdr->ip_src = ip_hdr->ip_dst;
-              ip_hdr->ip_dst = ip_dst_upd;
+              do_ip_header(NULL, ip_hdr, 0, NULL);
+
               /* ICMP header */
-              icmp_hdr->icmp_type = 0;
-              icmp_hdr->icmp_code = 0;
-              icmp_hdr->icmp_sum = 0;
-              uint16_t icmp_sum_check = cksum(icmp_hdr, sizeof(sr_icmp_hdr_t));
-              icmp_hdr->icmp_sum = icmp_sum_check;
+              do_icmp_msg(NULL, icmp_hdr, NULL, 0, 0);
+
               sr_send_packet(sr, packet, len, lm_entry_itf->name);
               struct sr_arpreq *arp_req = sr_arpcache_queuereq(arp_cache, ip_hdr->ip_dst, packet, len, lm_entry_itf->name);
               handle_arpreq(sr, arp_req);
@@ -236,77 +196,33 @@ void sr_handlepacket(struct sr_instance *sr,
           struct sr_arpentry *arp_entry = sr_arpcache_lookup(&sr->cache, lm_entry->gw.s_addr);
           struct sr_if *lm_entry_itf = sr_get_interface(sr, lm_entry->interface);
           if(arp_entry){
-            /* ICMP header */
             int icmp_len = sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t) + sizeof(sr_icmp_t3_hdr_t);
             uint8_t *packet_icmp = (uint8_t *)malloc(icmp_len);
+
             /* Ethernet header */
-            sr_ethernet_hdr_t *eth_hdr_upd = (sr_ethernet_hdr_t *)packet_icmp;
-            memcpy(eth_hdr_upd->ether_dhost, eth_hdr->ether_shost, ETHER_ADDR_LEN);
-            memcpy(eth_hdr_upd->ether_shost, if_itf->addr, ETHER_ADDR_LEN);
-            eth_hdr_upd->ether_type = eth_hdr->ether_type;
+            do_ethernet_header(packet_icmp, eth_hdr, if_itf);
+
             /* IP header */
-            sr_ip_hdr_t *ip_hdr_upd = (sr_ip_hdr_t *)((unsigned char *)packet_icmp + sizeof(sr_ethernet_hdr_t));
-            ip_hdr_upd->ip_hl = ip_hdr->ip_hl;
-            ip_hdr_upd->ip_v = ip_hdr->ip_v;
-            ip_hdr_upd->ip_tos = ip_hdr->ip_tos;
-            ip_hdr_upd->ip_len = htons(icmp_len - sizeof(sr_ethernet_hdr_t));
-            ip_hdr_upd->ip_id = 0;
-            ip_hdr_upd->ip_off = htons(IP_DF);
-            ip_hdr_upd->ip_ttl = INIT_TTL;
-            ip_hdr_upd->ip_p = ip_protocol_icmp;
-            ip_hdr_upd->ip_sum = 0;
-            uint16_t ip_sum_upd = cksum(ip_hdr, sizeof(sr_ip_hdr_t));
-            ip_hdr_upd->ip_sum = ip_sum_upd;
-            ip_hdr_upd->ip_src = if_itf->ip;
-            ip_hdr_upd->ip_dst = ip_hdr->ip_src;
+            do_ip_header(packet_icmp, ip_hdr, icmp_len, if_itf);
+
             /* ICMP header */
-            sr_icmp_t3_hdr_t *icmp_hdr = (sr_icmp_t3_hdr_t *)((unsigned char *)packet_icmp + sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t));
-            icmp_hdr->icmp_type = 3;
-            icmp_hdr->icmp_code = 3;
-            icmp_hdr->icmp_sum = 0;
-            uint16_t icmp_sum_upd = cksum(icmp_hdr, sizeof(sr_icmp_t3_hdr_t));
-            icmp_hdr->icmp_sum = icmp_sum_upd;
-            icmp_hdr->unused = 0;
-            icmp_hdr->next_mtu = 0;
-            memcpy(icmp_hdr->data, ip_hdr, ICMP_DATA_SIZE);
+            do_icmp_msg(packet_icmp, NULL, ip_hdr, 3, 3);
 
             sr_send_packet(sr, packet_icmp, sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t) + sizeof(sr_icmp_t3_hdr_t), lm_entry_itf->name);
             free(packet_icmp);
             return;
           }else{
-            /* ICMP header */
             int icmp_len = sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t) + sizeof(sr_icmp_t3_hdr_t);
             uint8_t *packet_icmp = (uint8_t *)malloc(icmp_len);
+
             /* Ethernet header */
-            sr_ethernet_hdr_t *eth_hdr_upd = (sr_ethernet_hdr_t *)packet_icmp;
-            memcpy(eth_hdr_upd->ether_dhost, eth_hdr->ether_shost, ETHER_ADDR_LEN);
-            memcpy(eth_hdr_upd->ether_shost, if_itf->addr, ETHER_ADDR_LEN);
-            eth_hdr_upd->ether_type = eth_hdr->ether_type;
+            do_ethernet_header(packet_icmp, eth_hdr, if_itf);
+
             /* IP header */
-            sr_ip_hdr_t *ip_hdr_upd = (sr_ip_hdr_t *)((unsigned char *)packet_icmp + sizeof(sr_ethernet_hdr_t));
-            ip_hdr_upd->ip_hl = ip_hdr->ip_hl;
-            ip_hdr_upd->ip_v = ip_hdr->ip_v;
-            ip_hdr_upd->ip_tos = ip_hdr->ip_tos;
-            ip_hdr_upd->ip_len = htons(icmp_len - sizeof(sr_ethernet_hdr_t));
-            ip_hdr_upd->ip_id = 0;
-            ip_hdr_upd->ip_off = htons(IP_DF);
-            ip_hdr_upd->ip_ttl = INIT_TTL;
-            ip_hdr_upd->ip_p = ip_protocol_icmp;
-            ip_hdr_upd->ip_sum = 0;
-            uint16_t ip_sum_upd = cksum(ip_hdr, sizeof(sr_ip_hdr_t));
-            ip_hdr_upd->ip_sum = ip_sum_upd;
-            ip_hdr_upd->ip_src = if_itf->ip;
-            ip_hdr_upd->ip_dst = ip_hdr->ip_src;
+            do_ip_header(packet_icmp, ip_hdr, icmp_len, if_itf);
+
             /* ICMP header */
-            sr_icmp_t3_hdr_t *icmp_hdr = (sr_icmp_t3_hdr_t *)((unsigned char *)packet_icmp + sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t));
-            icmp_hdr->icmp_type = 3;
-            icmp_hdr->icmp_code = 3;
-            icmp_hdr->icmp_sum = 0;
-            uint16_t icmp_sum_upd = cksum(icmp_hdr, sizeof(sr_icmp_t3_hdr_t));
-            icmp_hdr->icmp_sum = icmp_sum_upd;
-            icmp_hdr->unused = 0;
-            icmp_hdr->next_mtu = 0;
-            memcpy(icmp_hdr->data, ip_hdr, ICMP_DATA_SIZE);
+            do_icmp_msg(packet_icmp, NULL, ip_hdr, 3, 3);
 
             struct sr_arpreq *arp_req = sr_arpcache_queuereq(arp_cache, ip_hdr->ip_src, packet_icmp, 
                                     sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t) + sizeof(sr_icmp_t3_hdr_t), lm_entry_itf->name);
@@ -329,12 +245,12 @@ void sr_handlepacket(struct sr_instance *sr,
         struct sr_if *lm_entry_itf = sr_get_interface(sr, lm_entry->interface);
         struct sr_arpentry *arp_entry = sr_arpcache_lookup(&sr->cache, lm_entry->gw.s_addr);
         if(arp_entry){
+          memcpy(eth_hdr->ether_shost, lm_entry_itf->addr, ETHER_ADDR_LEN);
+          memcpy(eth_hdr->ether_dhost, arp_entry->mac, ETHER_ADDR_LEN);
           ip_hdr->ip_ttl--;
           ip_hdr->ip_sum = 0;
           uint16_t ip_sum_upd = cksum(ip_hdr, sizeof(sr_ip_hdr_t));
           ip_hdr->ip_sum = ip_sum_upd;
-          memcpy(eth_hdr->ether_shost, lm_entry_itf->addr, ETHER_ADDR_LEN);
-          memcpy(eth_hdr->ether_dhost, arp_entry->mac, ETHER_ADDR_LEN);
           sr_send_packet(sr, packet, len, lm_entry_itf->name);
           free(arp_entry);
           return;
@@ -353,40 +269,17 @@ void sr_handlepacket(struct sr_instance *sr,
         struct sr_if *lm_entry_itf = sr_get_interface(sr, lm_entry->interface);
         struct sr_arpentry *arp_entry = sr_arpcache_lookup(&sr->cache, lm_entry->gw.s_addr);
         if(arp_entry){
-          /* ICMP header */
             int icmp_len = sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t) + sizeof(sr_icmp_t3_hdr_t);
             uint8_t *packet_icmp = (uint8_t *)malloc(icmp_len);
-            /* Ethernet header */
-            sr_ethernet_hdr_t *eth_hdr_upd = (sr_ethernet_hdr_t *)packet_icmp;
-            memcpy(eth_hdr_upd->ether_dhost, eth_hdr->ether_shost, ETHER_ADDR_LEN);
-            memcpy(eth_hdr_upd->ether_shost, lm_entry_itf->addr, ETHER_ADDR_LEN);
-            eth_hdr_upd->ether_type = eth_hdr->ether_type;
-            /* IP header */
-            sr_ip_hdr_t *ip_hdr_upd = (sr_ip_hdr_t *)((unsigned char *)packet_icmp + sizeof(sr_ethernet_hdr_t));
-            ip_hdr_upd->ip_hl = ip_hdr->ip_hl;
-            ip_hdr_upd->ip_v = ip_hdr->ip_v;
-            ip_hdr_upd->ip_tos = ip_hdr->ip_tos;
-            ip_hdr_upd->ip_len = htons(icmp_len - sizeof(sr_ethernet_hdr_t));
-            ip_hdr_upd->ip_id = 0;
-            ip_hdr_upd->ip_off = htons(IP_DF);
-            ip_hdr_upd->ip_ttl = INIT_TTL;
-            ip_hdr_upd->ip_p = ip_protocol_icmp;
-            ip_hdr_upd->ip_sum = 0;
-            uint16_t ip_sum_upd = cksum(ip_hdr, sizeof(sr_ip_hdr_t));
-            ip_hdr_upd->ip_sum = ip_sum_upd;
-            ip_hdr_upd->ip_src = lm_entry_itf->ip;
-            ip_hdr_upd->ip_dst = ip_hdr->ip_src;
-            /* ICMP header */
-            sr_icmp_t3_hdr_t *icmp_hdr = (sr_icmp_t3_hdr_t *)((unsigned char *)packet_icmp + sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t));
-            icmp_hdr->icmp_type = 3;
-            icmp_hdr->icmp_code = 0;
-            icmp_hdr->icmp_sum = 0;
-            uint16_t icmp_sum_upd = cksum(icmp_hdr, sizeof(sr_icmp_t3_hdr_t));
-            icmp_hdr->icmp_sum = icmp_sum_upd;
-            icmp_hdr->unused = 0;
-            icmp_hdr->next_mtu = 0;
-            memcpy(icmp_hdr->data, ip_hdr, ICMP_DATA_SIZE);
 
+            /* Ethernet header */
+            do_ethernet_header(packet_icmp, eth_hdr, lm_entry_itf);
+
+            /* IP header */
+            do_ip_header(packet_icmp, ip_hdr, icmp_len, lm_entry_itf);
+
+            /* ICMP header */
+            do_icmp_msg(packet_icmp, NULL, ip_hdr, 3, 0);
             sr_send_packet(sr, packet_icmp, sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t) + sizeof(sr_icmp_t3_hdr_t), lm_entry_itf->name);
             free(packet_icmp);
             return;
@@ -394,36 +287,15 @@ void sr_handlepacket(struct sr_instance *sr,
       else{
         int icmp_len = sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t) + sizeof(sr_icmp_t3_hdr_t);
             uint8_t *packet_icmp = (uint8_t *)malloc(icmp_len);
+            
             /* Ethernet header */
-            sr_ethernet_hdr_t *eth_hdr_upd = (sr_ethernet_hdr_t *)packet_icmp;
-            memcpy(eth_hdr_upd->ether_dhost, eth_hdr->ether_shost, ETHER_ADDR_LEN);
-            memcpy(eth_hdr_upd->ether_shost, lm_entry_itf->addr, ETHER_ADDR_LEN);
-            eth_hdr_upd->ether_type = eth_hdr->ether_type;
+            do_ethernet_header(packet_icmp, eth_hdr, lm_entry_itf);
+
             /* IP header */
-            sr_ip_hdr_t *ip_hdr_upd = (sr_ip_hdr_t *)((unsigned char *)packet_icmp + sizeof(sr_ethernet_hdr_t));
-            ip_hdr_upd->ip_hl = ip_hdr->ip_hl;
-            ip_hdr_upd->ip_v = ip_hdr->ip_v;
-            ip_hdr_upd->ip_tos = ip_hdr->ip_tos;
-            ip_hdr_upd->ip_len = htons(icmp_len - sizeof(sr_ethernet_hdr_t));
-            ip_hdr_upd->ip_id = 0;
-            ip_hdr_upd->ip_off = htons(IP_DF);
-            ip_hdr_upd->ip_ttl = INIT_TTL;
-            ip_hdr_upd->ip_p = ip_protocol_icmp;
-            ip_hdr_upd->ip_sum = 0;
-            uint16_t ip_sum_upd = cksum(ip_hdr, sizeof(sr_ip_hdr_t));
-            ip_hdr_upd->ip_sum = ip_sum_upd;
-            ip_hdr_upd->ip_src = lm_entry_itf->ip;
-            ip_hdr_upd->ip_dst = ip_hdr->ip_src;
+            do_ip_header(packet_icmp, ip_hdr, icmp_len, lm_entry_itf);
+
             /* ICMP header */
-            sr_icmp_t3_hdr_t *icmp_hdr = (sr_icmp_t3_hdr_t *)((unsigned char *)packet_icmp + sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t));
-            icmp_hdr->icmp_type = 3;
-            icmp_hdr->icmp_code = 0;
-            icmp_hdr->icmp_sum = 0;
-            uint16_t icmp_sum_upd = cksum(icmp_hdr, sizeof(sr_icmp_t3_hdr_t));
-            icmp_hdr->icmp_sum = icmp_sum_upd;
-            icmp_hdr->unused = 0;
-            icmp_hdr->next_mtu = 0;
-            memcpy(icmp_hdr->data, ip_hdr, ICMP_DATA_SIZE);
+            do_icmp_msg(packet_icmp, NULL, ip_hdr, 3, 0);
 
             struct sr_arpreq *arp_req = sr_arpcache_queuereq(arp_cache, ip_hdr->ip_src, packet, len, lm_entry_itf->name);
             handle_arpreq(sr, arp_req);
@@ -450,4 +322,64 @@ struct sr_rt *lpm_entry(struct sr_rt *rtable, uint32_t dst_ip){
     rtable = rtable->next;
   }
   return lm_entry;
+}
+
+void do_ethernet_header(uint8_t *packet, sr_ethernet_hdr_t *eth_hdr, struct sr_if *interface){
+  if(packet){
+  sr_ethernet_hdr_t *eth_hdr_upd = (sr_ethernet_hdr_t *)packet;
+  memcpy(eth_hdr_upd->ether_dhost, eth_hdr->ether_shost, ETHER_ADDR_LEN);
+  memcpy(eth_hdr_upd->ether_shost, interface->addr, ETHER_ADDR_LEN);
+    eth_hdr_upd->ether_type = eth_hdr->ether_type;
+  }else{
+    memcpy(eth_hdr->ether_dhost, eth_hdr->ether_shost, ETHER_ADDR_LEN);
+    memcpy(eth_hdr->ether_shost, interface->addr, ETHER_ADDR_LEN);
+  }
+}
+
+void do_ip_header(uint8_t *packet, sr_ip_hdr_t *ip_hdr,  unsigned int len,struct sr_if *interface){
+  if(packet){
+    sr_ip_hdr_t *ip_hdr_upd = (sr_ip_hdr_t *)((unsigned char *)packet + sizeof(sr_ethernet_hdr_t));
+    ip_hdr_upd->ip_hl = ip_hdr->ip_hl;
+    ip_hdr_upd->ip_v = ip_hdr->ip_v;
+    ip_hdr_upd->ip_tos = ip_hdr->ip_tos;
+    ip_hdr_upd->ip_len = htons(len - sizeof(sr_ethernet_hdr_t));
+    ip_hdr_upd->ip_id = 0;
+    ip_hdr_upd->ip_off = htons(IP_DF);
+    ip_hdr_upd->ip_ttl = INIT_TTL;
+    ip_hdr_upd->ip_p = ip_protocol_icmp;
+    ip_hdr_upd->ip_sum = 0;
+    uint16_t ip_sum_upd = cksum(ip_hdr, sizeof(sr_ip_hdr_t));
+    ip_hdr_upd->ip_sum = ip_sum_upd;
+    ip_hdr_upd->ip_src = interface->ip;
+    ip_hdr_upd->ip_dst = ip_hdr->ip_src;
+  }else{
+    ip_hdr->ip_off = htons(IP_DF);
+    ip_hdr->ip_ttl = INIT_TTL;
+    ip_hdr->ip_sum = 0;
+    uint16_t ip_sum_upd = cksum(ip_hdr, sizeof(sr_ip_hdr_t));
+    ip_hdr->ip_sum = ip_sum_upd;
+    uint32_t ip_dst_upd = ip_hdr->ip_src;
+    ip_hdr->ip_src = ip_hdr->ip_dst;
+    ip_hdr->ip_dst = ip_dst_upd;
+  }
+}
+
+void do_icmp_msg(uint8_t *packet, sr_icmp_hdr_t *icmp_hdr, sr_ip_hdr_t *ip_hdr, int type, int code){
+  if(packet){
+    sr_icmp_t3_hdr_t *icmp_hdr = (sr_icmp_t3_hdr_t *)((unsigned char *)packet + sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t));
+    icmp_hdr->icmp_type = type;
+    icmp_hdr->icmp_code = code;
+    icmp_hdr->icmp_sum = 0;
+    uint16_t icmp_sum_upd = cksum(icmp_hdr, sizeof(sr_icmp_t3_hdr_t));
+    icmp_hdr->icmp_sum = icmp_sum_upd;
+    icmp_hdr->unused = 0;
+    icmp_hdr->next_mtu = 0;
+    memcpy(icmp_hdr->data, ip_hdr, ICMP_DATA_SIZE);
+  }else if(icmp_hdr){
+    icmp_hdr->icmp_type = 0;
+    icmp_hdr->icmp_code = 0;
+    icmp_hdr->icmp_sum = 0;
+    uint16_t icmp_sum_upd = cksum(icmp_hdr, sizeof(sr_icmp_hdr_t));
+    icmp_hdr->icmp_sum = icmp_sum_upd;
+  }
 }
