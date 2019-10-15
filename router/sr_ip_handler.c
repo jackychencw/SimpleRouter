@@ -59,6 +59,7 @@ void sr_handle_ip(struct sr_instance *sr,
         ip_addr.s_addr = ip_dst;
 
         struct sr_rt *rt = sr_rt_lpm_lookup(sr, ip_addr);
+        printf("finished finding rt\n");
         if (lpm)
         {
             struct sr_if *t_iface = sr_get_interface(sr, rt->interface);
