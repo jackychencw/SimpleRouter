@@ -42,7 +42,7 @@ uint8_t ip_sanity_check(sr_ip_hdr_t *ip_hdr, unsigned int len)
     int min_len = sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t);
     uint16_t tmp_sum = ip_hdr->ip_sum;
     ip_hdr->ip_sum = 0;
-    uint8_t *passed = (tmp_sum == cksum(ip_hdr, len)) && (len >= min_len);
+    uint8_t passed = (tmp_sum == cksum(ip_hdr, len)) && (len >= min_len);
     ip_hdr->ip_sum = tmp_sum;
     return passed;
 }
