@@ -85,7 +85,7 @@ int sr_handle_icmp_reply(struct sr_instance *sr, uint8_t *buf, unsigned int buf_
     struct sr_if *target_iface = sr_rt_lookup_iface(sr, ip_hdr->ip_src);
 
     memcpy(eth_hdr->ether_dhost, eth_hdr->ether_shost, ETHER_ADDR_LEN);
-    memcpy(eth_hdr->ether_shost, "A2:34:82:2A:17:D9", ETHER_ADDR_LEN);
+    memcpy(eth_hdr->ether_shost, target_iface->addr, ETHER_ADDR_LEN);
     ip_hdr->ip_dst = ip_hdr->ip_src;
     ip_hdr->ip_src = iface->ip;
     add_icmp_header(icmp_hdr, type, code);
