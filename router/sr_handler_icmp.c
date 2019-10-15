@@ -60,7 +60,7 @@ int sr_handle_icmp_t3(struct sr_instance *sr,
     sr_ip_hdr_t *ip_hdr = (sr_ip_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
     sr_icmp_t3_hdr_t *icmp_t3_hdr = (sr_icmp_t3_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t));
 
-    sr_ethernet_hdr_t *target_eth_hdr = get_ethernet_hdr(buf);
+    sr_ethernet_hdr_t *target_eth_hdr = (sr_ethernet_hdr_t *)buf;
     sr_ip_hdr_t *target_ip_hdr = get_ip_hdr(buf);
     struct sr_if *iface = sr_rt_lookup_iface(sr, target_ip_hdr->ip_src);
 
