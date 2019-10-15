@@ -15,11 +15,15 @@ void sr_handle_ip(struct sr_instance *sr,
                   unsigned int len,
                   struct sr_if *iface)
 {
-    r_ethernet_hdr_t *eth_hdr = get_ethernet_hdr(packet);
-    sr_arp_hdr_t *ip_hdr = get_ip_hdr(packet);
+    sr_ethernet_hdr_t *eth_hdr = get_ethernet_hdr(packet);
+    sr_ip_hdr_t *ip_hdr = get_ip_hdr(packet);
     /*1. if it's for me */
     printf("Handling ip packet !!\n\n");
-    print_hdr_ip(ip_hdr);
+    fprintf(stderr, "\tversion: %d\n", ip_hdr->ip_v);
+    fprintf(stderr, "\theader length: %d\n", ip_hdr->ip_hl);
+    fprintf(stderr, "\ttype of service: %d\n", ip_hdr->ip_tos);
+    fprintf(stderr, "\tlength: %d\n", ntohs(ip_hdr->ip_len));
+    fprintf(stderr, "\tid: %d\n", ntohs(ip_hdr->ip_id));
     printf("\n\nfinished print ip hdr.\n");
     /*2. if it's ICMP echo req, send echo reply */
     /*3. if it's tcp/udp, send ICMP port unreachable */

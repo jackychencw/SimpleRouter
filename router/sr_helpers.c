@@ -15,7 +15,7 @@ sr_ethernet_hdr_t *get_ethernet_hdr(uint8_t *buf)
     return (sr_ethernet_hdr_t *)(buf + sizeof(sr_ethernet_hdr_t));
 };
 
-sr_ip_hdr_t *get_IP_hdr(uint8_t *buf)
+sr_ip_hdr_t *get_ip_hdr(uint8_t *buf)
 {
     return (sr_ip_hdr_t *)(buf + sizeof(sr_ethernet_hdr_t));
 }
