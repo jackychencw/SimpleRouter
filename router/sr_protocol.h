@@ -164,13 +164,15 @@ enum sr_arp_opcode
 enum sr_icmp_type
 {
   icmp_echo_reply_type = 0x0000,
-  icmp_dest_unreachable_type = 0x0003
+  icmp_dest_unreachable_type = 0x0003,
+  icmp_time_exceed_type = 0x0011
 };
 
 enum sr_icmp_dest_unreachable_code
 {
   icmp_net_unreachable_code = 0,
   icmp_host_unreachable_code = 1,
+
   icmp_port_unreachable_code = 3
 };
 

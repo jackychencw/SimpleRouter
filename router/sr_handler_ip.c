@@ -10,14 +10,51 @@
 #include "sr_helpers.h"
 #include "sr_utils.h"
 #include "sr_handler_icmp.h"
+#include "sr_handler_arp.h"
+
+void sr_ip_packet_forward(struct sr_instance *sr,
+                          sr_ip_hdr_t *ip_hdr,
+                          sr_ethernet_hdr_t *eth_hdr,
+
+                          uint8_t *packet,
+                          unsigned int len,
+                          struct sr_if *src_iface,
+                          struct sr_if *tar_iface)
+{
+    uint32_t dest = ip_hdr->ip_dst;
+
+    struct sr_arpentry *entry = sr_arpcache_lookup(&sr->cache, dest);
+    /*7. check if there is a arp cache exists */
+    /*10. if no arp cache */
+    /*11. send arp request and resent >5 times */
+    /*12. if exists arp cache */
+    /*13. send frame to next hope */
+    if (entry)
+    {
+        printf("It's cached!\n");
+        /* foward packet */
+        uint8_t *arpreq = create_arp_packet(src_iface->addr, src_iface->ip, tar_iface->addr, tar_iface->ip, arp_op_request);
+        int count;
+        for (count = 0; count < 5; count++)
+        {
+            sr_send_packet(sr, arpreq, sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t), src_iface->name);
+        }
+    }
+    else
+    {
+        add_ethernet_header(eth_hdr, eth_hdr->ether_dhost, src_iface->addr, eth_hdr->ether_type);
+        add_ip_header(ip_hdr, len, ip_hdr->ip_hl, ip_hdr->ip_v, ip_hdr->ip_tos, ip_hdr->ip_p, src_iface->ip, ip_hdr->ip_dst);
+        sr_send_packet(sr, packet, len, src_iface->name);
+    }
+}
 
 void sr_handle_ip(struct sr_instance *sr,
                   uint8_t *packet,
                   unsigned int len,
                   struct sr_if *iface)
 {
-    sr_ethernet_hdr_t *eth_hdr = get_ethernet_hdr(packet);
-    sr_ip_hdr_t *ip_hdr = get_ip_hdr(packet);
+    sr_ethernet_hdr_t *eth_hdr = (sr_ethernet_hdr_t *)packet;
+    sr_ip_hdr_t *ip_hdr = (sr_ip_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
     uint32_t ip_dst = ip_hdr->ip_dst;
 
     if (!ip_sanity_check(ip_hdr, len))
@@ -29,8 +66,11 @@ void sr_handle_ip(struct sr_instance *sr,
     if (ip_hdr->ip_ttl <= 0)
     {
         printf("ERROR: ip packet ttl expired... \n");
+        sr_handle_icmp(sr, packet, len, iface, icmp_time_exceed_type, 0);
         return;
     }
+    ip_hdr->ip_sum = 0;
+    ip_hdr->ip_sum = cksum(ip_hdr, sizeof(sr_ip_hdr_t));
 
     /*1. if it's for me */
     if (ip_dst == iface->ip)
@@ -63,10 +103,10 @@ void sr_handle_ip(struct sr_instance *sr,
         /*6. if there is a match */
         if (rt)
         {
-            /*7. check if there is a arp cache exists */
             struct sr_if *target_iface = sr_get_interface(sr, rt->interface);
             if (target_iface)
             {
+                sr_ip_packet_forward(sr, ip_hdr, eth_hdr, packet, len, iface, target_iface);
                 printf("There is a match, about to check arp cache\n");
             }
         }
@@ -76,12 +116,6 @@ void sr_handle_ip(struct sr_instance *sr,
             /*9. send ICMP net unreachable*/
             printf("There is no match, should send icmp net unreachable\n");
             sr_handle_icmp(sr, packet, len, iface, icmp_dest_unreachable_type, icmp_net_unreachable_code);
-            
         }
     }
-
-    /*10. if no arp cache */
-    /*11. send arp request and resent >5 times */
-    /*12. if exists arp cache */
-    /*13. send frame to next hope */
 }

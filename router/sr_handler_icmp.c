@@ -113,6 +113,10 @@ void sr_handle_icmp(
         printf("ICMP echo reply, handling.\n");
         sr_handle_icmp_reply(sr, packet, len, type, code, iface);
         break;
+    case (icmp_time_exceed_type):
+        printf("ICMP echo reply, handling.\n");
+        sr_handle_icmp_reply(sr, packet, len, type, code, iface);
+        break;
     default:
         printf("no valid type\n");
         return;
