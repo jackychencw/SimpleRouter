@@ -79,20 +79,26 @@ int sr_handle_icmp_t3(struct sr_instance *sr,
 
 int sr_handle_icmp_reply(struct sr_instance *sr, uint8_t *buf, unsigned int buf_size, uint8_t type, uint8_t code, struct sr_if *iface)
 {
-    sr_ethernet_hdr_t *eth_hdr = (sr_ethernet_hdr_t *)get_ethernet_hdr(buf);
-    sr_ip_hdr_t *ip_hdr = (sr_ip_hdr_t *)get_ip_hdr(buf);
-    sr_icmp_hdr_t *icmp_hdr = (sr_icmp_hdr_t *)get_icmp_hdr(buf);
+    unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t) + sizeof(sr_icmp_t3_hdr_t);
+    uint8_t *packet = (uint8_t *)malloc(packet_size);
+    sr_ethernet_hdr_t *eth_hdr = (sr_ethernet_hdr_t *)get_ethernet_hdr(packet);
+    sr_ip_hdr_t *ip_hdr = (sr_ip_hdr_t *)get_ip_hdr(packet);
+    sr_icmp_hdr_t *icmp_hdr = (sr_icmp_hdr_t *)get_icmp_hdr(packet);
+
+    sr_ethernet_hdr_t *buf_eth_hdr = (sr_ethernet_hdr_t *)get_ethernet_hdr(buf);
+    sr_ip_hdr_t *buf_ip_hdr = (sr_ip_hdr_t *)get_ip_hdr(buf);
     struct sr_if *target_iface = sr_rt_lookup_iface(sr, ip_hdr->ip_src);
-    print_hdrs(buf, buf_size);
-    memcpy(eth_hdr->ether_dhost, eth_hdr->ether_shost, ETHER_ADDR_LEN);
-    print_hdrs(buf, buf_size);
-    memcpy(eth_hdr->ether_shost, target_iface->addr, ETHER_ADDR_LEN);
-    print_hdrs(buf, buf_size);
-    print_addr_eth(eth_hdr->ether_dhost);
-    ip_hdr->ip_dst = ip_hdr->ip_src;
-    ip_hdr->ip_src = iface->ip;
+
+    add_ethernet_header(eth_hdr, buf_eth_hdr->ether_shost, target_iface->addr, buf_eth_hdr->ether_type);
+    add_ip_header(ip_hdr, packet_size,
+                  buf_ip_hdr->ip_hl,
+                  buf_ip_hdr->ip_v,
+                  buf_ip_hdr->ip_tos,
+                  buf_ip_hdr->ip_p,
+                  target_iface->ip,
+                  buf_ip_hdr->ip_src);
     add_icmp_header(icmp_hdr, type, code);
-    int res = sr_send_packet(sr, buf, buf_size, target_iface->name);
+    int res = sr_send_packet(sr, packet, packet_size, target_iface->name);
     printf("Echo reply handled.");
     print_hdrs(buf, buf_size);
     return res;
