@@ -82,7 +82,6 @@ void sr_handle_arp_op_req(struct sr_instance *sr, sr_ethernet_hdr_t *eth_hder, s
                                               arp_hder->ar_sha, /* tha */
                                               arp_hder->ar_sip, /* tip */
                                               arp_op_reply);
-
     sr_send_packet(sr, reply_packet, packet_size, interface->name);
 }
 
