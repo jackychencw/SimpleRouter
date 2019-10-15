@@ -85,9 +85,7 @@ void handle_arprep(struct sr_instance *sr,
         {
             struct sr_packet *next = packet->next;
             uint8_t *buf = packet->buf;
-
             sr_send_packet(sr, buf, packet->len, iface->name);
-
             packet = next;
         }
     }
@@ -102,13 +100,9 @@ int sr_send_arprep(struct sr_instance *sr,
     printf("Sr send arp reply...\n");
     unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
     uint8_t *packet = (uint8_t *)malloc(packet_size);
-
-    /* 
-  First assign pointer to ethernet header, then shift arp header 
-  by size of ethernet header
-  */
     sr_ethernet_hdr_t *rep_eth_hder = (sr_ethernet_hdr_t *)packet;
     sr_arp_hdr_t *rep_arp_hder = (sr_arp_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
+
     memcpy(rep_eth_hder->ether_dhost, origin_ethernet_hder->ether_shost, ETHER_ADDR_LEN);
     memcpy(rep_eth_hder->ether_shost, iface->addr, ETHER_ADDR_LEN);
     rep_eth_hder->ether_type = ntohs(ethertype_arp);
@@ -173,7 +167,7 @@ void sr_handle_arp(struct sr_instance *sr,
 {
     sr_ethernet_hdr_t *ethernet_hdr = get_ethernet_hdr(packet);
     sr_arp_hdr_t *arp_hdr = get_arp_hdr(packet);
-
+    print_hdrs(packet, len);
     if (!arp_sanity_check(len))
     {
         fprintf(stderr, "Packet doesn't meet minimum length requirement.\n");
