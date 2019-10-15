@@ -57,6 +57,43 @@ void handle_arpreq(struct sr_instance *sr, struct sr_arpreq *request)
     pthread_mutex_unlock(&sr->cache.lock);
 }
 
+/*--
+
+   The ARP reply processing code should move entries from the ARP request
+   queue to the ARP cache:
+
+   # When servicing an arp reply that gives us an IP->MAC mapping
+   req = arpcache_insert(ip, mac)
+
+   if req:
+       send all packets on the req->packets linked list
+       arpreq_destroy(req)
+
+   --*/
+void handle_arprep(struct sr_instance *sr,
+                   sr_arp_hdr_t *arp_hdr,
+                   struct sr_if *iface)
+{
+    /* Find request by id */
+    struct sr_arpreq *req = sr_arpcache_insert(&sr->cache,
+                                               arp_hdr->ar_sha,
+                                               arp_hdr->ar_sip);
+    if (req)
+    {
+        struct sr_packet *packet = req->packets;
+        while (packet)
+        {
+            struct sr_packet *next = packet->next;
+            uint8_t *buf = packet->buf;
+
+            sr_send_packet(sr, buf, packet->len, iface->name);
+
+            packet = next;
+        }
+    }
+    sr_arpreq_destroy(&sr->cache, req);
+}
+
 int sr_send_arprep(struct sr_instance *sr,
                    sr_ethernet_hdr_t *origin_ethernet_hder,
                    sr_arp_hdr_t *origin_arp_hder,
