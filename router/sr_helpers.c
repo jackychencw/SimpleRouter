@@ -49,8 +49,8 @@ uint8_t ip_sanity_check(sr_ip_hdr_t *ip_hdr, unsigned int len)
 
 void add_ethernet_header(sr_ethernet_hdr_t *eth_hdr, uint8_t *tha, uint8_t *sha, uint16_t packet_type)
 {
-    memcpy(eth_hdr->ether_dhost, tha, ETHER_ADDR_LEN);
     memcpy(eth_hdr->ether_shost, sha, ETHER_ADDR_LEN);
+    memcpy(eth_hdr->ether_dhost, tha, ETHER_ADDR_LEN);
     eth_hdr->ether_type = htons(packet_type);
 }
 
