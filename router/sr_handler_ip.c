@@ -20,11 +20,30 @@ void sr_handle_ip(struct sr_instance *sr,
     sr_ip_hdr_t *ip_hdr = get_ip_hdr(packet);
     uint32_t ip_dst = ip_hdr->ip_dst;
 
-    if (!ip_sanity_check(ip_hdr, len))
+    /*if (!ip_sanity_check(ip_hdr, len))
     {
         printf("ERROR: ip packet didn't pass sanity check...\n");
         return;
+    }*/
+    if (len >= (sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t)))
+    {
+        printf("ip packet size ok\n");
     }
+    else
+    {
+        printf("ip packet size not ok\n");
+    }
+    uint16_t tmp_sum = ip_hdr->ip_sum;
+    ip_hdr->ip_sum = 0;
+    if (tmp_sum == cksum(ip_hdr, sizeof(sr_ip_hdr_t)))
+    {
+        printf("cksum ok\n");
+    }
+    else
+    {
+        printf("cksum not ok\n");
+    }
+    ip_hdr->ip_sum = tmp_sum;
 
     ip_hdr->ip_ttl -= 1;
     ip_hdr->ip_sum = cksum(ip_hdr, sizeof(sr_ip_hdr_t));
