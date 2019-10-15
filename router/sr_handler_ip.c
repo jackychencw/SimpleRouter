@@ -11,25 +11,6 @@
 #include "sr_utils.h"
 #include "sr_handler_icmp.h"
 
-struct sr_if *sr_rt_lookup(struct sr_instance *sr, uint32_t dest)
-{
-    struct sr_rt *rt = sr->routing_table;
-    while (rt)
-    {
-        struct sr_rt *next = rt->next;
-        if (dest == rt->dest.s_addr)
-        {
-            return sr_get_interface(sr, rt->interface);
-        }
-        else
-        {
-            rt = next;
-        }
-    }
-    /* No interface found. */
-    return NULL;
-}
-
 void sr_handle_ip(struct sr_instance *sr,
                   uint8_t *packet,
                   unsigned int len,
@@ -38,16 +19,28 @@ void sr_handle_ip(struct sr_instance *sr,
     sr_ethernet_hdr_t *eth_hdr = get_ethernet_hdr(packet);
     sr_ip_hdr_t *ip_hdr = get_ip_hdr(packet);
     uint32_t ip_dst = ip_hdr->ip_dst;
+
+    if (!ip_sanity_check(ip_hdr, len))
+    {
+        printf("ERROR: ip packet didn't pass sanity check...", stderr);
+        return;
+    }
+
+    ip_hdr->ip_ttl -= 1;
+    ip_hdr->ip_sum = cksum(ip_hdr, sizeof(sr_ip_hdr_t));
+
     /*1. if it's for me */
     if (ip_dst == iface->ip)
     {
-        switch (ip_protocol(packet + sizeof(sr_ethernet_hdr_t)))
+        printf("This is an request for me, handling ... \n");
+        uint8_t ip_proto = ip_protocol(packet + sizeof(sr_ethernet_hdr_t));
+        switch (ip_proto)
         {
-        case (ip_protocol_icmp): /*3. if it's ICMP echo req, send echo reply */
+        case (ip_protocol_icmp): /*2. if it's ICMP echo req, send echo reply */
             printf("Hello icmp\n");
             sr_handle_icmp(sr, packet, len, iface, icmp_echo_reply_type, 0);
             break;
-        case (ip_protocol_tcp | ip_protocol_udp): /*2. if it's tcp/udp, send ICMP port unreachable */
+        case (ip_protocol_tcp | ip_protocol_udp): /*3. if it's tcp/udp, send ICMP port unreachable */
             printf("hello udp/tcp\n");
             sr_handle_icmp(sr, packet, len, iface, icmp_dest_unreachable_type, icmp_port_unreachable_code);
             break;
@@ -56,8 +49,7 @@ void sr_handle_ip(struct sr_instance *sr,
             return;
         }
     }
-    /*4. if it's not for me */
-    else
+    else /*4. if it's not for me */
     {
         struct in_addr ip_addr;
         ip_addr.s_addr = ip_dst;
@@ -65,20 +57,20 @@ void sr_handle_ip(struct sr_instance *sr,
         /*5. check routing table, perform lightweight packet marking */
         struct sr_rt *rt = sr_rt_lpm_lookup(sr, ip_addr);
 
-        /*8. if there is a match */
+        /*6. if there is a match */
         if (rt)
         {
-            /*9. check if there is a arp cache exists */
-            struct sr_if *t_iface = sr_get_interface(sr, rt->interface);
-            if (t_iface)
+            /*7. check if there is a arp cache exists */
+            struct sr_if *target_iface = sr_get_interface(sr, rt->interface);
+            if (target_iface)
             {
                 printf("There is a match, about to check arp cache\n");
             }
         }
-        /*6. if there isn't a match */
+        /*8. if there isn't a match */
         else
         {
-            /*7. send ICMP net unreachable*/
+            /*9. send ICMP net unreachable*/
             printf("There is no match, should send icmp net unreachable\n");
         }
     }

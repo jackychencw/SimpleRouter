@@ -94,7 +94,7 @@ void handle_icmp_unreachable(struct sr_instance *sr)
     */
 }
 
-void handle_icmp_echo_reply(struct sr_instance *sr)
+void handle_icmp_echo_reply(struct sr_instance *sr, struct sr_if *iface)
 {
     /* Update the IP header fields.
     error_ip_hdr = (struct sr_ip_hdr *)packet;
@@ -133,7 +133,7 @@ void sr_handle_icmp(
         break;
     case (icmp_echo_reply_type):
         printf("ICMP echo reply, handling.\n");
-        handle_icmp_echo_reply(sr);
+        handle_icmp_echo_reply(sr, iface);
         break;
     default:
         printf("no valid type\n");

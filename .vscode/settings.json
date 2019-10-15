@@ -8,6 +8,10 @@
     "sr_utils.h": "c",
     "sr_handler_icmp.h": "c",
     "sr_rt.h": "c",
-    "__locale": "c"
+    "__locale": "c",
+    "array": "c",
+    "string": "c",
+    "string_view": "c",
+    "vector": "c"
   }
 }

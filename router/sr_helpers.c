@@ -4,6 +4,7 @@
 #include "sr_protocol.h"
 #include "sr_helpers.h"
 #include "sr_utils.h"
+#include "sr_router.h"
 
 sr_arp_hdr_t *get_arp_hdr(uint8_t *buf)
 {
@@ -40,4 +41,36 @@ uint8_t ip_sanity_check(sr_ip_hdr_t *ip_hdr, unsigned int len)
 {
     int min_len = sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t);
     return (cksum(ip_hdr, len) == ip_hdr->ip_sum) && (len >= min_len);
+}
+
+void add_ethernet_header(sr_ethernet_hdr_t *eth_hdr, uint8_t *tha, uint8_t *sha, uint16_t packet_type)
+{
+    memcpy(eth_hdr->ether_dhost, tha, ETHER_ADDR_LEN);
+    memcpy(eth_hdr->ether_shost, sha, ETHER_ADDR_LEN);
+    eth_hdr->ether_type = htons(packet_type);
+}
+
+void add_ip_header(sr_ip_hdr_t *ip_hdr,
+                   unsigned int len,
+                   unsigned int ip_hl,
+                   unsigned int ip_v,
+                   uint8_t ip_tos,
+                   uint8_t ip_p)
+{
+    ip_hdr->ip_hl = ip_hl;
+    ip_hdr->ip_v = ip_v;
+    ip_hdr->ip_tos = ip_tos;
+    ip_hdr->ip_len = htons(len - sizeof(sr_ethernet_hdr_t));
+    ip_hdr->ip_id = 0;
+    ip_hdr->ip_off = htons(IP_DF);
+    ip_hdr->ip_ttl = INIT_TTL;
+    ip_hdr->ip_p = ip_p;
+    ip_hdr->ip_sum = 0;
+}
+
+void add_icmp_msg(sr_icmp_hdr_t *icmp_hdr, uint8_t type, uint8_t code)
+{
+    icmp_hdr->icmp_type = type;
+    icmp_hdr->icmp_code = code;
+    icmp_hdr->icmp_sum = 0;
 }
