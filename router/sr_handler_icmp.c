@@ -79,14 +79,13 @@ int sr_handle_icmp_t3(struct sr_instance *sr,
 
 int sr_handle_icmp_reply(struct sr_instance *sr, uint8_t *buf, unsigned int buf_size, uint8_t type, uint8_t code, struct sr_if *iface)
 {
-    sr_ethernet_hdr_t *eth_hdr = (sr_ethernet_hdr_t *)get_ethernet_hdr(buf);
-    sr_ip_hdr_t *ip_hdr = (sr_ip_hdr_t *)get_ip_hdr(buf);
-    sr_icmp_hdr_t *icmp_hdr = (sr_icmp_hdr_t *)get_icmp_hdr(buf);
+    sr_ethernet_hdr_t *eth_hdr = get_ethernet_hdr(buf);
+    sr_ip_hdr_t *ip_hdr = get_ip_hdr(buf);
+    sr_icmp_hdr_t *icmp_hdr = get_icmp_hdr(buf);
     struct sr_if *target_iface = sr_rt_lookup_iface(sr, ip_hdr->ip_src);
 
     memcpy(eth_hdr->ether_dhost, eth_hdr->ether_shost, ETHER_ADDR_LEN);
     memcpy(eth_hdr->ether_shost, "A2:34:82:2A:17:D9", ETHER_ADDR_LEN);
-    print_hdr_eth(eth_hdr);
     ip_hdr->ip_dst = ip_hdr->ip_src;
     ip_hdr->ip_src = iface->ip;
     add_icmp_header(icmp_hdr, type, code);
