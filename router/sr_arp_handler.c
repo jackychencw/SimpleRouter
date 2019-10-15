@@ -43,13 +43,11 @@ void handle_arpreq(struct sr_instance *sr, struct sr_arpreq *request)
         {
             /* TODO: Send icmp host unreachable to source addr of all pkts waiting on 
             this request*/
-            printf("More than 5 times sent, we should do something!\n");
             sr_arpreq_destroy(&sr->cache, request);
         }
         else
         {
             /* sr_send_arpreq(sr, request->ip);*/
-            printf("Less than 5 tiems sent, we keep trying.\n");
             request->sent = time(0);
             request->times_sent += 1;
         }

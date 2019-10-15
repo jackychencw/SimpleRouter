@@ -86,7 +86,7 @@ void sr_handlepacket(struct sr_instance *sr,
   switch (type)
   {
   case ethertype_arp:
-    printf("*** -> Received IP packet <- ***\n\n");
+    printf("*** -> Received arp packet <- ***\n\n");
     sr_handle_arp(sr,
                   packet,
                   len,
