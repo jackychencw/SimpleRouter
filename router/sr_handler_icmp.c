@@ -47,11 +47,11 @@ uint8_t *create_icmp_packet(uint8_t *tha, uint8_t *sha, struct sr_ip_hdr *dest_i
     return NULL;
 }
 
-int sr_send_icmp_t3(struct sr_instance *sr,
-                    uint8_t *buf,
-                    uint8_t icmp_type,
-                    uint8_t icmp_code,
-                    struct sr_if *rec_iface)
+int sr_handle_icmp_t3(struct sr_instance *sr,
+                      uint8_t *buf,
+                      uint8_t icmp_type,
+                      uint8_t icmp_code,
+                      struct sr_if *rec_iface)
 {
     unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t) + sizeof(sr_icmp_t3_hdr_t);
     uint8_t *packet = (uint8_t *)malloc(packet_size);
@@ -77,7 +77,7 @@ int sr_send_icmp_t3(struct sr_instance *sr,
     return res;
 }
 
-int sr_send_icmp_reply(struct sr_instance *sr, uint8_t *buf, unsigned int buf_size, uint8_t type, uint8_t code, struct sr_if *iface)
+int sr_handle_icmp_reply(struct sr_instance *sr, uint8_t *buf, unsigned int buf_size, uint8_t type, uint8_t code, struct sr_if *iface)
 {
     sr_ethernet_hdr_t *eth_hdr = (sr_ethernet_hdr_t *)get_ethernet_hdr(buf);
     sr_ip_hdr_t *ip_hdr = (sr_ip_hdr_t *)get_ip_hdr(buf);
@@ -85,8 +85,8 @@ int sr_send_icmp_reply(struct sr_instance *sr, uint8_t *buf, unsigned int buf_si
     struct sr_if *target_iface = sr_rt_lookup_iface(sr, ip_hdr->ip_src);
 
     add_ethernet_header(eth_hdr, eth_hdr->ether_shost, target_iface->addr, eth_hdr->ether_type);
-    ip_hdr->ip_src = iface->ip;
     ip_hdr->ip_dst = ip_hdr->ip_src;
+    ip_hdr->ip_src = iface->ip;
     add_icmp_header(icmp_hdr, type, code);
     int res = sr_send_packet(sr, buf, buf_size, target_iface->name);
     printf("Echo reply handled.");
@@ -106,11 +106,11 @@ void sr_handle_icmp(
     {
     case (icmp_dest_unreachable_type):
         printf("ICMP destination unreachable, handling.\n");
-        sr_send_icmp_t3(sr, packet, type, code, iface);
+        sr_handle_icmp_t3(sr, packet, type, code, iface);
         break;
     case (icmp_echo_reply_type):
         printf("ICMP echo reply, handling.\n");
-        sr_send_icmp_reply(sr, packet, len, type, code, iface);
+        sr_handle_icmp_reply(sr, packet, len, type, code, iface);
         break;
     default:
         printf("no valid type\n");
