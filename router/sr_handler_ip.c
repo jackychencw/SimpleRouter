@@ -25,7 +25,6 @@ void sr_handle_ip(struct sr_instance *sr,
         printf("ERROR: ip packet didn't pass sanity check...\n");
         return;
     }
-    ip_hdr->ip_sum = tmp_sum;
 
     ip_hdr->ip_ttl -= 1;
     ip_hdr->ip_sum = cksum(ip_hdr, sizeof(sr_ip_hdr_t));
