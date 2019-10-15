@@ -95,6 +95,7 @@ void sr_handlepacket(struct sr_instance *sr,
   case ethertype_ip:
     printf("*** -> Received IP packet <- ***\n\n");
     printf("*** -> Function not implemented to handle IP request yet, please wait ... <- ***\n\n");
+    print_hdrs(packet, len);
     /* TODO sr_handle_IP;*/
     break;
   default:
