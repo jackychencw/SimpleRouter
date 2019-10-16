@@ -29,6 +29,7 @@ void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
             if (times_sent >= 5)
             {
                 sr_handle_icmp_t3(sr, (uint8_t *)packet, icmp_dest_unreachable_type, icmp_host_unreachable_code, src_interface);
+                sr_arpreq_destroy(&sr->cache, request);
             }
             else
             {
@@ -59,11 +60,9 @@ void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
                 memset(arp_hder->ar_tha, 0xff, ETHER_ADDR_LEN);
                 arp_hder->ar_tip = dest_ip;
                 sr_send_packet(sr, packet, packet_size, src_interface->name);
-                free(packet);
             }
         }
     }
-    sr_arpreq_destroy(&sr->cache, request);
 
     pthread_mutex_unlock(&sr->cache.lock);
 }
@@ -105,7 +104,6 @@ int send_arp_packet(struct sr_instance *sr, uint8_t *sha, uint32_t sip, uint8_t 
     arp_hder->ar_tip = tip;
     int res = sr_send_packet(sr, packet, packet_size, interface->name);
     print_hdrs(packet, packet_size);
-    free(packet);
     return res;
 }
 
@@ -144,7 +142,6 @@ void sr_handle_arp_op_rep(struct sr_instance *sr,
                 sr_send_packet(sr, packet->buf, packet->len, packet->iface);
             }
         }
-        printf("haha\n");
         sr_arpreq_destroy(&sr->cache, request);
     }
     pthread_mutex_unlock(&sr->cache.lock);
