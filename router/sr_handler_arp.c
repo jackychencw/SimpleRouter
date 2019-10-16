@@ -56,18 +56,24 @@ uint8_t *create_arp_packet(uint8_t *sha, uint32_t sip, uint8_t *tha, uint32_t ti
     printf("Creating an arp packet...\n");
     unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
     uint8_t *packet = (uint8_t *)malloc(packet_size);
+    printf("ethhder\n");
     sr_ethernet_hdr_t *eth_hder = (sr_ethernet_hdr_t *)packet;
     sr_arp_hdr_t *arp_hder = (sr_arp_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
     add_ethernet_header(eth_hder, tha, sha, ethertype_arp);
 
+    printf("ar_hrd\n");
     arp_hder->ar_hrd = htons(arp_hrd_ethernet);
+    printf("ar_pro\n");
     arp_hder->ar_pro = htons(ethertype_ip);
+    printf("ar_pro\n");
     arp_hder->ar_hln = ETHER_ADDR_LEN;
     /* Deault ip version is ipv4 */
     arp_hder->ar_pln = 4;
     arp_hder->ar_op = htons(arp_op_reply);
+    printf("ar_sha\n");
     memcpy(arp_hder->ar_sha, sha, ETHER_ADDR_LEN);
     arp_hder->ar_sip = sip;
+    printf("ar_tha\n");
     memcpy(arp_hder->ar_tha, tha, ETHER_ADDR_LEN);
     arp_hder->ar_tip = tip;
     printf("done\n");
