@@ -31,7 +31,6 @@ void sr_ip_packet_forward(struct sr_instance *sr,
     /*13. send frame to next hope */
     if (!entry)
     {
-        printf("It's not cached\n");
         uint8_t *arpreq = create_arp_packet(src_iface->addr, src_iface->ip, tar_iface->addr, tar_iface->ip, arp_op_request);
         int count;
         for (count = 0; count < 5; count++)
@@ -41,11 +40,11 @@ void sr_ip_packet_forward(struct sr_instance *sr,
     }
     else
     {
-        printf("it's cached");
         add_ethernet_header(eth_hdr, eth_hdr->ether_dhost, src_iface->addr, eth_hdr->ether_type);
         add_ip_header(ip_hdr, len, ip_hdr->ip_hl, ip_hdr->ip_v, ip_hdr->ip_tos, ip_hdr->ip_p, src_iface->ip, ip_hdr->ip_dst);
         sr_send_packet(sr, packet, len, src_iface->name);
         print_hdrs(packet, len);
+        free(entry);
     }
 }
 
@@ -64,6 +63,8 @@ void sr_handle_ip(struct sr_instance *sr,
         return;
     }
 
+    ip_hdr->ip_ttl--;
+
     if (ip_hdr->ip_ttl <= 0)
     {
         printf("ERROR: ip packet ttl expired... \n");
@@ -76,16 +77,13 @@ void sr_handle_ip(struct sr_instance *sr,
     /*1. if it's for me */
     if (ip_dst == iface->ip)
     {
-        printf("This is an request for me, handling ... \n");
         uint8_t ip_proto = ip_protocol(packet + sizeof(sr_ethernet_hdr_t));
         switch (ip_proto)
         {
         case (ip_protocol_icmp): /*2. if it's ICMP echo req, send echo reply */
-            printf("Hello icmp\n");
             sr_handle_icmp(sr, packet, len, iface, icmp_echo_reply_type, 0);
             break;
         case (ip_protocol_tcp | ip_protocol_udp): /*3. if it's tcp/udp, send ICMP port unreachable */
-            printf("hello udp/tcp\n");
             sr_handle_icmp(sr, packet, len, iface, icmp_dest_unreachable_type, icmp_port_unreachable_code);
             break;
         default:
@@ -107,7 +105,6 @@ void sr_handle_ip(struct sr_instance *sr,
             struct sr_if *target_iface = sr_get_interface(sr, rt->interface);
             if (target_iface)
             {
-                printf("There is a match, about to check arp cache\n");
                 sr_ip_packet_forward(sr, ip_hdr, eth_hdr, packet, len, iface, target_iface);
             }
         }
@@ -115,7 +112,6 @@ void sr_handle_ip(struct sr_instance *sr,
         else
         {
             /*9. send ICMP net unreachable*/
-            printf("There is no match, should send icmp net unreachable\n");
             sr_handle_icmp(sr, packet, len, iface, icmp_dest_unreachable_type, icmp_net_unreachable_code);
         }
     }
