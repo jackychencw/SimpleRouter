@@ -103,7 +103,6 @@ int send_arp_packet(struct sr_instance *sr, uint8_t *sha, uint32_t sip, uint8_t 
     memcpy(arp_hder->ar_tha, tha, ETHER_ADDR_LEN);
     arp_hder->ar_tip = tip;
     int res = sr_send_packet(sr, packet, packet_size, interface->name);
-    print_hdrs(packet, packet_size);
     return res;
 }
 
@@ -168,12 +167,12 @@ void sr_handle_arp(struct sr_instance *sr,
     switch (op_code)
     {
     case arp_op_request:
-        printf("Sensed [ARP request], handling ...\n\n");
+        printf("Received [ARP request], handling ...\n\n");
         /* Construct an arp reply and send it back. */
         sr_handle_arp_op_req(sr, ethernet_hdr, arp_hdr, iface);
         break;
     case arp_op_reply:
-        printf("Sensed [ARP reply], handling ...\n\n");
+        printf("Received [ARP reply], handling ...\n\n");
         /* Cache it, go through request queue and send it back. */
         sr_handle_arp_op_rep(sr, ethernet_hdr, arp_hdr, iface);
         break;
