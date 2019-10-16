@@ -58,7 +58,7 @@ uint8_t *create_arp_packet(uint8_t *sha, uint32_t sip, uint8_t *tha, uint32_t ti
     uint8_t *packet = (uint8_t *)malloc(packet_size);
     sr_ethernet_hdr_t *eth_hder = (sr_ethernet_hdr_t *)packet;
     sr_arp_hdr_t *arp_hder = (sr_arp_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
-    memset(eth_hder->ether_shost, sha, ETHER_ADDR_LEN);
+    memcpy(eth_hder->ether_shost, sha, ETHER_ADDR_LEN);
     memcpy(eth_hder->ether_dhost, tha, ETHER_ADDR_LEN);
     eth_hder->ether_type = htons(ethertype_arp);
 
@@ -80,6 +80,7 @@ void sr_handle_arp_op_req(struct sr_instance *sr, sr_ethernet_hdr_t *eth_hder, s
 {
     printf("Simple router handling arp request...\n");
     unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
+    sr_arpcache_insert(&sr->cache, arp_hder->ar_sha, arp_hder->ar_sip);
     uint8_t *reply_packet = create_arp_packet(interface->addr,  /* sha */
                                               interface->ip,    /* sip */
                                               arp_hder->ar_sha, /* tha */
