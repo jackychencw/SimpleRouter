@@ -139,7 +139,7 @@ void sr_handle_arp_op_rep(struct sr_instance *sr,
                 printf("sending packet\n");
                 sr_ethernet_hdr_t *new_eth_hdr = (sr_ethernet_hdr_t *)packet->buf;
                 memcpy(new_eth_hdr->ether_dhost, arp_hdr->ar_sha, ETHER_ADDR_LEN);
-                memcpy(new_eth_hdr->ether_shost, ethernet_hdr->ether_dhost, ETHER_ADDR_LEN);
+                memcpy(new_eth_hdr->ether_shost, iface->addr, ETHER_ADDR_LEN);
                 sr_send_packet(sr, packet->buf, packet->len, packet->iface);
             }
         }
