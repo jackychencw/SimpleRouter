@@ -165,7 +165,7 @@ enum sr_icmp_type
 {
   icmp_echo_reply_type = 0,
   icmp_dest_unreachable_type = 3,
-  icmp_time_exceed_type = 1
+  icmp_time_exceed_type = 11
 };
 
 enum sr_icmp_dest_unreachable_code
