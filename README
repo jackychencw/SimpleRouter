@@ -16,3 +16,14 @@ The router must maintain an ARP cache whose entries are invalidated after a time
 The router must queue all packets waiting for outstanding ARP replies. If a host does not respond to 5 ARP requests, the queued packet is dropped and an ICMP host unreachable message is sent back to the source of the queued packet.
 The router must not needlessly drop packets (for example when waiting for an ARP reply)
 The router must enforce guarantees on timeouts–that is, if an ARP request is not responded to within a fixed period of time, the ICMP host unreachable message is generated even if no more packets arrive at the router.
+
+## File Structure
+-Router
+    -sr_handler_arp.c
+        Includes all functions that needed to handle an arp reply or arp request.
+    -sr_handler_icmp.c
+        Includes all functions that needed to handle icmp packets.
+    -sr_handler_ip.c 
+        Includes all functions that needed to handle ip packets.
+    -sr_helpers.c
+        Some helper functions including sanity check, get header and etc..
