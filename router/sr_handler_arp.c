@@ -58,7 +58,9 @@ uint8_t *create_arp_packet(uint8_t *sha, uint32_t sip, uint8_t *tha, uint32_t ti
     uint8_t *packet = (uint8_t *)malloc(packet_size);
     printf("ethhder\n");
     sr_ethernet_hdr_t *eth_hder = (sr_ethernet_hdr_t *)packet;
+    printf("arp_hder\n");
     sr_arp_hdr_t *arp_hder = (sr_arp_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
+    printf("add ethernet_header\n");
     add_ethernet_header(eth_hder, tha, sha, ethertype_arp);
 
     printf("ar_hrd\n");
