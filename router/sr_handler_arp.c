@@ -34,6 +34,11 @@ void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
         }
         else
         {
+            if (!tar_interface)
+            {
+                printf("didnt' find interface\n");
+                return;
+            }
             request->sent = time(0);
             request->times_sent += 1;
             printf("hello world\n");
