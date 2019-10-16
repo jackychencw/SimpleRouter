@@ -24,6 +24,7 @@ void sr_ip_packet_forward(struct sr_instance *sr,
     {
         struct sr_arpreq *req = sr_arpcache_queuereq(&sr->cache, ip_hdr->ip_dst, packet, len, tar_iface->name);
         sr_send_5_arp_req(sr, req);
+        return;
     }
     else
     {
@@ -34,6 +35,7 @@ void sr_ip_packet_forward(struct sr_instance *sr,
         sr_send_packet(sr, packet, len, src_iface->name);
         print_hdrs(packet, len);
         free(entry);
+        return;
     }
 }
 
