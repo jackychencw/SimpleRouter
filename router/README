@@ -21,9 +21,28 @@ The router must enforce guarantees on timeouts–that is, if an ARP request is n
 -Router
     -sr_handler_arp.c
         Includes all functions that needed to handle an arp reply or arp request.
+        -arp handler handles two cases:
+                1. when arp is req, simply send a reply back to client
+                2. when arp is rep, cache the replyer's ip and mac, then process the request in cache that's supposed to be sent to this replyer
     -sr_handler_icmp.c
         Includes all functions that needed to handle icmp packets.
+                1. if icmp protocol -> if for itself, do reply, else forward it
+                2. if udp tcp protocol -> sent icmp_t3 back with correct type and code
     -sr_handler_ip.c 
         Includes all functions that needed to handle ip packets.
+                1. do sanity check
+                2. do ttl
+                3. do lmp on rt and find target to forward packet
+                4. if there is cache, do forward, else do broadcast
     -sr_helpers.c
         Some helper functions including sanity check, get header and etc..
+
+## Decisions to be made
+1.  At first we wanted to seperate set_eth_header\set_ip_header\and set_icmp_header, but found out this could cause many problems without careful implementation
+, so most of functions discarded the use of these functions.
+
+2.  Instead of having all the handler in router we decided to seperate them out for easier management.
+3.  We decided to seperate icmp out as a single handler just like arp and ip, just for easy management, also different group members can work on differnt subject
+without conflict.
+4.  we added icmp types and code in protocol in case we forget where it is.
+
