@@ -28,7 +28,6 @@ void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
             struct sr_if *src_interface = sr_get_interface(sr, packet->iface);
             if (times_sent >= 5)
             {
-
                 sr_handle_icmp_t3(sr, (uint8_t *)packet, icmp_dest_unreachable_type, icmp_host_unreachable_code, src_interface);
             }
             else
@@ -40,7 +39,6 @@ void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
                 }
                 request->sent = time(0);
                 request->times_sent += 1;
-                printf("hello world\n");
 
                 unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
                 uint8_t *packet = (uint8_t *)malloc(packet_size);
@@ -61,9 +59,7 @@ void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
                 memset(arp_hder->ar_tha, 0xff, ETHER_ADDR_LEN);
                 arp_hder->ar_tip = dest_ip;
                 sr_send_packet(sr, packet, packet_size, src_interface->name);
-                print_hdrs(packet, packet_size);
                 free(packet);
-                printf("hello\n");
             }
         }
     }
