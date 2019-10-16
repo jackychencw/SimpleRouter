@@ -62,6 +62,7 @@ void sr_handle_ip(struct sr_instance *sr,
     {
         printf("ERROR: ip packet ttl expired... \n");
         sr_handle_icmp_t3(sr, packet, icmp_time_exceed_type, 0, iface);
+
         return;
     }
     ip_hdr->ip_sum = 0;
