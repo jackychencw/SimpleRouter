@@ -32,7 +32,7 @@ void sr_ip_packet_forward(struct sr_instance *sr,
     else
     {
         printf("This is cached\n");
-        add_ethernet_header(eth_hdr, eth_hdr->ether_dhost, src_iface->addr, eth_hdr->ether_type);
+        add_ethernet_header(eth_hdr, eth_hdr->ether_dhost, src_iface->addr, ethertype_arp);
         add_ip_header(ip_hdr, len, ip_hdr->ip_hl, ip_hdr->ip_v, ip_hdr->ip_tos, ip_hdr->ip_p, src_iface->ip, ip_hdr->ip_dst);
         sr_send_packet(sr, packet, len, src_iface->name);
         print_hdrs(packet, len);
