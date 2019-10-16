@@ -35,7 +35,7 @@ void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
         {
             request->sent = time(0);
             request->times_sent += 1;
-
+            printf("hello world\n");
             int dest_ip = request->ip;
             struct sr_if *interface = sr_rt_lookup_iface(sr, dest_ip);
             unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
