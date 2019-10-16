@@ -26,11 +26,10 @@ void sr_ip_packet_forward(struct sr_instance *sr,
     struct sr_arpentry *entry = sr_arpcache_lookup(&sr->cache, dest);
     if (!entry)
     {
-        uint8_t *arpreq = create_arp_packet(src_iface->addr, src_iface->ip, (uint8_t *)0xff, ip_hdr->ip_dst, arp_op_request);
         int count;
         for (count = 0; count < 5; count++)
         {
-            sr_send_packet(sr, arpreq, sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t), src_iface->name);
+            send_arp_packet(sr,src_iface->addr, src_iface->ip, (uint8_t *)0xff, ip_hdr->ip_dst, arp_op_request, src_iface );
         }
     }
     else
