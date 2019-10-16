@@ -13,17 +13,13 @@
 #include "sr_handler_arp.h"
 
 void sr_ip_packet_forward(struct sr_instance *sr,
-                          sr_ip_hdr_t *ip_hdr,
-                          sr_ethernet_hdr_t *eth_hdr,
-
                           uint8_t *packet,
                           unsigned int len,
                           struct sr_if *src_iface,
                           struct sr_if *tar_iface)
 {
-    uint32_t dest = ip_hdr->ip_dst;
-    sr_print_routing_entry(sr->routing_table);
-    struct sr_arpentry *entry = sr_arpcache_lookup(&sr->cache, dest);
+    sr_ip_hdr_t *ip_hdr = (sr_ip_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
+    struct sr_arpentry *entry = sr_arpcache_lookup(&sr->cache, ip_hdr->ip_dst);
     if (!entry)
     {
         struct sr_arpreq *req = sr_arpcache_queuereq(&sr->cache, ip_hdr->ip_dst, packet, len, tar_iface->name);
@@ -32,8 +28,8 @@ void sr_ip_packet_forward(struct sr_instance *sr,
     else
     {
         printf("This is cached\n");
-        memcpy(eth_hdr->ether_shost, eth_hdr->ether_dhost, ETHER_ADDR_LEN);
         memcpy(eth_hdr->ether_dhost, entry->mac, ETHER_ADDR_LEN);
+        memcpy(eth_hdr->ether_shost, tar_iface->addr, ETHER_ADDR_LEN);
         add_ip_header(ip_hdr, len, ip_hdr->ip_hl, ip_hdr->ip_v, ip_hdr->ip_tos, ip_hdr->ip_p, src_iface->ip, ip_hdr->ip_dst);
         sr_send_packet(sr, packet, len, src_iface->name);
         print_hdrs(packet, len);
@@ -98,7 +94,7 @@ void sr_handle_ip(struct sr_instance *sr,
             struct sr_if *target_iface = sr_get_interface(sr, rt->interface);
             if (target_iface)
             {
-                sr_ip_packet_forward(sr, ip_hdr, eth_hdr, packet, len, iface, target_iface);
+                sr_ip_packet_forward(sr, packet, len, iface, target_iface);
                 return;
             }
             else
@@ -115,4 +111,5 @@ void sr_handle_ip(struct sr_instance *sr,
             return;
         }
     }
+    return;
 }
