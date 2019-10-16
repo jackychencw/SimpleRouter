@@ -30,7 +30,7 @@ void sr_ip_packet_forward(struct sr_instance *sr,
         for (count = 0; count < 5; count++)
         {
             /*send_arp_packet(sr,src_iface->addr, src_iface->ip, (uint8_t *)0xff, ip_hdr->ip_dst, arp_op_request, src_iface );*/
-            print("hello\n");
+            printf("hello\n");
         }
     }
     else
