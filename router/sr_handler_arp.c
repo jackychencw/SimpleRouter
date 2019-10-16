@@ -23,52 +23,52 @@ void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
     if (difftime(now, sent) > 1.0)
     {
         struct sr_packet *packet;
-            for (packet = request->packets; packet; packet = packet->next)
-            {if (times_sent >= 5)
+        for (packet = request->packets; packet; packet = packet->next)
         {
             struct sr_if *src_interface = sr_get_interface(sr, packet->iface);
-                sr_handle_icmp_t3(sr, (uint8_t *)packet, icmp_dest_unreachable_type, icmp_host_unreachable_code, src_interface);
-        }
-        else
-        {
-            if (!tar_interface)
+            if (times_sent >= 5)
             {
-                printf("didnt' find interface\n");
-                return;
+
+                sr_handle_icmp_t3(sr, (uint8_t *)packet, icmp_dest_unreachable_type, icmp_host_unreachable_code, src_interface);
             }
-            request->sent = time(0);
-            request->times_sent += 1;
-            printf("hello world\n");
+            else
+            {
+                if (!tar_interface)
+                {
+                    printf("didnt' find interface\n");
+                    return;
+                }
+                request->sent = time(0);
+                request->times_sent += 1;
+                printf("hello world\n");
 
-            unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
-            uint8_t *packet = (uint8_t *)malloc(packet_size);
-            sr_ethernet_hdr_t *eth_hder = (sr_ethernet_hdr_t *)packet;
-            sr_arp_hdr_t *arp_hder = (sr_arp_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
-            memset(eth_hder->ether_dhost, 0xff, ETHER_ADDR_LEN);
-            memcpy(eth_hder->ether_shost, tar_interface->addr, ETHER_ADDR_LEN);
-            eth_hder->ether_type = htons(ethertype_arp);
+                unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
+                uint8_t *packet = (uint8_t *)malloc(packet_size);
+                sr_ethernet_hdr_t *eth_hder = (sr_ethernet_hdr_t *)packet;
+                sr_arp_hdr_t *arp_hder = (sr_arp_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
+                memset(eth_hder->ether_dhost, 0xff, ETHER_ADDR_LEN);
+                memcpy(eth_hder->ether_shost, src_interface->addr, ETHER_ADDR_LEN);
+                eth_hder->ether_type = htons(ethertype_arp);
 
-            arp_hder->ar_hrd = htons(arp_hrd_ethernet);
-            arp_hder->ar_pro = htons(ethertype_ip);
-            arp_hder->ar_hln = ETHER_ADDR_LEN;
-            /* Deault ip version is ipv4 */
-            arp_hder->ar_pln = 4;
-            arp_hder->ar_op = htons(arp_op_request);
-            memcpy(arp_hder->ar_sha, tar_interface->addr, ETHER_ADDR_LEN);
-            arp_hder->ar_sip = tar_interface->ip;
-            memset(arp_hder->ar_tha, 0xff, ETHER_ADDR_LEN);
-            arp_hder->ar_tip = dest_ip;
-            sr_send_packet(sr, packet, packet_size, tar_interface->name);
-            print_hdrs(packet, packet_size);
-            free(packet);
-            sr_send_packet(sr, packet, packet_size, tar_interface->name);
-            printf("hello\n");
+                arp_hder->ar_hrd = htons(arp_hrd_ethernet);
+                arp_hder->ar_pro = htons(ethertype_ip);
+                arp_hder->ar_hln = ETHER_ADDR_LEN;
+                /* Deault ip version is ipv4 */
+                arp_hder->ar_pln = 4;
+                arp_hder->ar_op = htons(arp_op_request);
+                memcpy(arp_hder->ar_sha, src_interface->addr, ETHER_ADDR_LEN);
+                arp_hder->ar_sip = src_interface->ip;
+                memset(arp_hder->ar_tha, 0xff, ETHER_ADDR_LEN);
+                arp_hder->ar_tip = dest_ip;
+                sr_send_packet(sr, packet, packet_size, src_interface->name);
+                print_hdrs(packet, packet_size);
+                free(packet);
+                printf("hello\n");
+            }
         }
     }
-                
-            }
-            sr_arpreq_destroy(&sr->cache, request);
-        
+    sr_arpreq_destroy(&sr->cache, request);
+
     pthread_mutex_unlock(&sr->cache.lock);
 }
 
