@@ -33,6 +33,7 @@ void sr_ip_packet_forward(struct sr_instance *sr,
         memcpy(eth_hdr->ether_shost, src_iface->addr, ETHER_ADDR_LEN);
         ip_hdr->ip_sum = 0;
         ip_hdr->ip_sum = cksum(ip_hdr, sizeof(sr_ip_hdr_t));
+        print_hdrs(packet, len);
         int res = sr_send_packet(sr, packet, len, tar_iface->name);
         printf("response is %d\n", res);
         free(entry);
