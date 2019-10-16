@@ -18,13 +18,13 @@ void sr_ip_packet_forward(struct sr_instance *sr,
                           struct sr_if *src_iface,
                           struct sr_if *tar_iface)
 {
+    sr_ethernet_hdr_t *eth_hdr = (sr_ethernet_hdr_t *)packet;
     sr_ip_hdr_t *ip_hdr = (sr_ip_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
     struct sr_arpentry *entry = sr_arpcache_lookup(&sr->cache, ip_hdr->ip_dst);
     if (!entry)
     {
         struct sr_arpreq *req = sr_arpcache_queuereq(&sr->cache, ip_hdr->ip_dst, packet, len, tar_iface->name);
         sr_send_5_arp_req(sr, req);
-        return;
     }
     else
     {
@@ -35,7 +35,6 @@ void sr_ip_packet_forward(struct sr_instance *sr,
         sr_send_packet(sr, packet, len, src_iface->name);
         print_hdrs(packet, len);
         free(entry);
-        return;
     }
 }
 
