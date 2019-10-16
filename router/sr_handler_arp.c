@@ -127,7 +127,6 @@ void sr_handle_arp(struct sr_instance *sr,
     }
 
     uint16_t op_code = ntohs(arp_hdr->ar_op);
-    sr_arpcache_insert(&(sr->cache), arp_hdr->ar_sha, arp_hdr->ar_sip);
     switch (op_code)
     {
     case arp_op_request:
@@ -138,7 +137,7 @@ void sr_handle_arp(struct sr_instance *sr,
     case arp_op_reply:
         printf("Sensed [ARP reply], handling ...\n\n");
         /* Cache it, go through request queue and send it back. */
-
+        sr_arpcache_insert(&(sr->cache), arp_hdr->ar_sha, arp_hdr->ar_sip);
         sr_handle_arp_op_rep(sr, ethernet_hdr, arp_hdr, iface);
         break;
     default:

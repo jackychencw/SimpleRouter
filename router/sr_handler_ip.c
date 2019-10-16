@@ -22,16 +22,11 @@ void sr_ip_packet_forward(struct sr_instance *sr,
                           struct sr_if *tar_iface)
 {
     uint32_t dest = ip_hdr->ip_dst;
-
+    sr_print_routing_entry(sr->routing_table);
     struct sr_arpentry *entry = sr_arpcache_lookup(&sr->cache, dest);
-    /*7. check if there is a arp cache exists */
-    /*10. if no arp cache */
-    /*11. send arp request and resent >5 times */
-    /*12. if exists arp cache */
-    /*13. send frame to next hope */
     if (!entry)
     {
-        uint8_t *arpreq = create_arp_packet(src_iface->addr, src_iface->ip, tar_iface->addr, tar_iface->ip, arp_op_request);
+        uint8_t *arpreq = create_arp_packet(src_iface->addr, src_iface->ip, (uint8_t *)0xff, ip_hdr->ip_dst, arp_op_request);
         int count;
         for (count = 0; count < 5; count++)
         {
