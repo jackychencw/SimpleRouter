@@ -30,7 +30,7 @@ void sr_ip_packet_forward(struct sr_instance *sr,
     {
         printf("This is cached\n");
         memcpy(eth_hdr->ether_dhost, entry->mac, ETHER_ADDR_LEN);
-        memcpy(eth_hdr->ether_shost, src_iface->addr, ETHER_ADDR_LEN);
+        memcpy(eth_hdr->ether_shost, tar_iface->addr, ETHER_ADDR_LEN);
         ip_hdr->ip_sum = 0;
         ip_hdr->ip_sum = cksum(ip_hdr, sizeof(sr_ip_hdr_t));
         print_hdrs(packet, len);
