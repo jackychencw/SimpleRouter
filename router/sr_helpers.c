@@ -55,13 +55,10 @@ uint8_t icmp_sanity_check(sr_ip_hdr_t *ip_hdr, sr_icmp_hdr_t *icmp_hdr, unsigned
     return passed;
 }
 
-void add_ethernet_header(sr_ethernet_hdr_t *eth_hdr, uint8_t *tha, uint8_t *sha, uint16_t packet_type)
+void add_ethernet_header(sr_ethernet_hdr_t *eth_hdr, uint8_t *tha, uint8_t *sha, unsigned int packet_type)
 {
-    printf("add_eth_header shost\n");
     memcpy(eth_hdr->ether_shost, sha, ETHER_ADDR_LEN);
-    printf("add_eth_header dhost\n");
     memcpy(eth_hdr->ether_dhost, tha, ETHER_ADDR_LEN);
-    printf("add_eth_header packet type\n");
     eth_hdr->ether_type = htons(packet_type);
 }
 
