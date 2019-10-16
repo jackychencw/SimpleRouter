@@ -73,6 +73,7 @@ int send_arp_packet(struct sr_instance *sr, uint8_t *sha, uint32_t sip, uint8_t 
     memcpy(arp_hder->ar_tha, tha, ETHER_ADDR_LEN);
     arp_hder->ar_tip = tip;
     int res = sr_send_packet(sr, packet, packet_size, interface->name);
+    print_hdrs(packet, packet_size);
     free(packet);
     return res;
 }
@@ -80,15 +81,14 @@ int send_arp_packet(struct sr_instance *sr, uint8_t *sha, uint32_t sip, uint8_t 
 void sr_handle_arp_op_req(struct sr_instance *sr, sr_ethernet_hdr_t *eth_hder, sr_arp_hdr_t *arp_hder, struct sr_if *interface)
 {
     printf("Simple router handling arp request...\n");
-    unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
     sr_arpcache_insert(&sr->cache, arp_hder->ar_sha, arp_hder->ar_sip);
-    uint8_t *reply_packet = send_arp_packet(sr,
-                                            interface->addr,  /* sha */
-                                            interface->ip,    /* sip */
-                                            arp_hder->ar_sha, /* tha */
-                                            arp_hder->ar_sip, /* tip */
-                                            arp_op_reply,
-                                            interface);
+    send_arp_packet(sr,
+                    interface->addr,  /* sha */
+                    interface->ip,    /* sip */
+                    arp_hder->ar_sha, /* tha */
+                    arp_hder->ar_sip, /* tip */
+                    arp_op_reply,
+                    interface);
 }
 
 /* When receive an reply, fidn all cache that's related to this sha and send request */
