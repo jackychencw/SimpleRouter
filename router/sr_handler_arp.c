@@ -35,6 +35,7 @@ void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
         {
             request->sent = time(0);
             request->times_sent += 1;
+
             int dest_ip = request->ip;
             struct sr_if *interface = sr_rt_lookup_iface(sr, dest_ip);
             unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
@@ -59,6 +60,7 @@ void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
             print_hdrs(packet, packet_size);
             free(packet);
             sr_send_packet(sr, packet, packet_size, interface->name);
+            printf("hello\n");
         }
     }
     pthread_mutex_unlock(&sr->cache.lock);
