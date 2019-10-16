@@ -56,6 +56,7 @@ int send_arp_packet(struct sr_instance *sr, uint8_t *sha, uint32_t sip, uint8_t 
     printf("Creating an arp packet...\n");
     unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
     uint8_t *packet = (uint8_t *)malloc(packet_size);
+    bzero(packet, packet_size);
     sr_ethernet_hdr_t *eth_hder = (sr_ethernet_hdr_t *)packet;
     sr_arp_hdr_t *arp_hder = (sr_arp_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
     memset(eth_hder->ether_dhost, tha, ETHER_ADDR_LEN);
