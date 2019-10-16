@@ -22,15 +22,12 @@ void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
     struct sr_if *tar_interface = sr_rt_lookup_iface(sr, dest_ip);
     if (difftime(now, sent) > 1.0)
     {
-        if (times_sent >= 5)
-        {
-            struct sr_packet *packet;
+        struct sr_packet *packet;
             for (packet = request->packets; packet; packet = packet->next)
-            {
-                struct sr_if *src_interface = sr_get_interface(sr, packet->iface);
+            {if (times_sent >= 5)
+        {
+            struct sr_if *src_interface = sr_get_interface(sr, packet->iface);
                 sr_handle_icmp_t3(sr, (uint8_t *)packet, icmp_dest_unreachable_type, icmp_host_unreachable_code, src_interface);
-            }
-            sr_arpreq_destroy(&sr->cache, request);
         }
         else
         {
@@ -68,6 +65,10 @@ void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
             printf("hello\n");
         }
     }
+                
+            }
+            sr_arpreq_destroy(&sr->cache, request);
+        
     pthread_mutex_unlock(&sr->cache.lock);
 }
 
