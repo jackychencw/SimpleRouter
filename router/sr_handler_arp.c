@@ -96,22 +96,23 @@ void sr_handle_arp_op_rep(struct sr_instance *sr,
                           struct sr_if *iface)
 {
     printf("Simple router handling arp reply...\n");
-    struct sr_arpreq *req = sr_arpcache_insert(&(sr->cache), arp_hdr->ar_sha, arp_hdr->ar_sip);
-    if (req)
+    if (iface->ip == arp_hdr->ar_tip)
     {
-        struct sr_packet *packet = req->packets;
-        while (packet)
+        pthread_mutex_lock(&sr->cache.lock);
+        struct sr_arpreq *request = sr_arpcache_insert(&(sr->cache), arp_hdr->ar_sha, arp_hdr->ar_sip);
+        if (request)
         {
-            struct sr_packet *next = packet->next;
-            sr_ethernet_hdr_t *new_eth_hdr = (sr_ethernet_hdr_t *)packet->buf;
-
-            /* Replace destination host to reply's sha */
-            memcpy(new_eth_hdr->ether_dhost, arp_hdr->ar_sha, ETHER_ADDR_LEN);
-            sr_send_packet(sr, packet->buf, packet->len, packet->iface);
-            packet = next;
+            struct sr_packet *packet;
+            for (packet = request->packets; packet; packet = packet->next)
+            {
+                sr_ethernet_hdr_t *new_eth_hdr = (sr_ethernet_hdr_t *)packet->buf;
+                memcpy(new_eth_hdr->ether_dhost, arp_hdr->ar_sha, ETHER_ADDR_LEN);
+                sr_send_packet(sr, packet->buf, packet->len, packet->iface);
+            }
         }
+        sr_arpreq_destroy(&sr->cache, request);
     }
-    sr_arpreq_destroy(&sr->cache, req);
+    pthread_mutex_unlock(&sr->cache.lock);
 }
 
 void sr_handle_arp(struct sr_instance *sr,
