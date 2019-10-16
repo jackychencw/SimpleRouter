@@ -37,6 +37,19 @@ void sr_ip_packet_forward(struct sr_instance *sr,
     }
 }
 
+void handle_icmp_proto(struct sr_instance *sr, uint8_t *packet, unsigned int len, struct sr_if *iface)
+{
+    sr_ethernet_hdr_t *eth_hdr = (sr_ethernet_hdr_t *)packet;
+    sr_ip_hdr_t *ip_hdr = (sr_ip_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
+    sr_icmp_hdr_t *icmp_hdr = (sr_icmp_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t));
+    if (!icmp_sanity_check(ip_hdr, icmp_hdr, len))
+    {
+        printf("ICMP sanity check failed, drop\n");
+        return;
+    }
+    sr_handle_icmp_reply(sr, packet, len, icmp_hdr->icmp_type, icmp_hdr->icmp_code, iface);
+}
+
 void sr_handle_ip(struct sr_instance *sr,
                   uint8_t *packet,
                   unsigned int len,
@@ -70,10 +83,10 @@ void sr_handle_ip(struct sr_instance *sr,
         switch (ip_proto)
         {
         case (ip_protocol_icmp): /*2. if it's ICMP echo req, send echo reply */
-            sr_handle_icmp(sr, packet, len, iface, icmp_echo_reply_type, 0);
+            handle_icmp_proto(sr, packet, len, iface);
             break;
         case (ip_protocol_tcp | ip_protocol_udp): /*3. if it's tcp/udp, send ICMP port unreachable */
-            sr_handle_icmp(sr, packet, len, iface, icmp_dest_unreachable_type, icmp_port_unreachable_code);
+            sr_handle_icmp_t3(sr, packet, icmp_dest_unreachable_type, icmp_port_unreachable_code, iface);
             break;
         default:
             printf("No valid ip protocol found.\n");

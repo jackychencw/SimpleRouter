@@ -17,6 +17,7 @@ void sr_handle_icmp_t3(struct sr_instance *sr,
                        uint8_t icmp_code,
                        struct sr_if *iface)
 {
+
     printf("handling icmp t3\n");
     unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t) + sizeof(sr_icmp_t3_hdr_t);
     uint8_t *packet = (uint8_t *)malloc(packet_size);
@@ -35,7 +36,7 @@ void sr_handle_icmp_t3(struct sr_instance *sr,
                   target_ip_hdr->ip_hl,
                   target_ip_hdr->ip_v,
                   target_ip_hdr->ip_tos,
-                  target_ip_hdr->ip_p,
+                  ip_protocol_icmp,
                   iface->ip,
                   target_ip_hdr->ip_src);
     add_icmp_t3_header(icmp_t3_hdr, icmp_type, icmp_code, (uint8_t *)target_ip_hdr);
@@ -57,7 +58,6 @@ int sr_handle_icmp_reply(struct sr_instance *sr, uint8_t *buf, unsigned int buf_
     ip_hdr->ip_src = iface->ip;
     add_icmp_header(icmp_hdr, type, code);
     int res = sr_send_packet(sr, buf, buf_size, target_iface->name);
-    printf("Echo reply handled.\n");
     return res;
 }
 
