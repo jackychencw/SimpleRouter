@@ -142,8 +142,8 @@ void sr_handle_arp_op_rep(struct sr_instance *sr,
                 memcpy(new_eth_hdr->ether_shost, iface->addr, ETHER_ADDR_LEN);
                 sr_send_packet(sr, packet->buf, packet->len, packet->iface);
             }
+            sr_arpreq_destroy(&sr->cache, request);
         }
-        sr_arpreq_destroy(&sr->cache, request);
     }
     pthread_mutex_unlock(&sr->cache.lock);
 }
