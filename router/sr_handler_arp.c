@@ -18,7 +18,8 @@ void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
     time_t sent = request->sent;
     uint32_t times_sent = request->times_sent;
     pthread_mutex_lock(&sr->cache.lock);
-
+    int dest_ip = request->ip;
+    struct sr_if *tar_interface = sr_rt_lookup_iface(sr, dest_ip);
     if (difftime(now, sent) > 1.0)
     {
         if (times_sent >= 5)
@@ -26,8 +27,8 @@ void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
             struct sr_packet *packet;
             for (packet = request->packets; packet; packet = packet->next)
             {
-                struct sr_if *interface = sr_get_interface(sr, packet->iface);
-                sr_handle_icmp_t3(sr, (uint8_t *)packet, icmp_dest_unreachable_type, icmp_host_unreachable_code, interface);
+                struct sr_if *src_interface = sr_get_interface(sr, packet->iface);
+                sr_handle_icmp_t3(sr, (uint8_t *)packet, icmp_dest_unreachable_type, icmp_host_unreachable_code, src_interface);
             }
             sr_arpreq_destroy(&sr->cache, request);
         }
@@ -36,14 +37,13 @@ void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
             request->sent = time(0);
             request->times_sent += 1;
             printf("hello world\n");
-            int dest_ip = request->ip;
-            struct sr_if *interface = sr_rt_lookup_iface(sr, dest_ip);
+
             unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
             uint8_t *packet = (uint8_t *)malloc(packet_size);
             sr_ethernet_hdr_t *eth_hder = (sr_ethernet_hdr_t *)packet;
             sr_arp_hdr_t *arp_hder = (sr_arp_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
             memset(eth_hder->ether_dhost, 0xff, ETHER_ADDR_LEN);
-            memcpy(eth_hder->ether_shost, interface->addr, ETHER_ADDR_LEN);
+            memcpy(eth_hder->ether_shost, tar_interface->addr, ETHER_ADDR_LEN);
             eth_hder->ether_type = htons(ethertype_arp);
 
             arp_hder->ar_hrd = htons(arp_hrd_ethernet);
@@ -52,14 +52,14 @@ void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
             /* Deault ip version is ipv4 */
             arp_hder->ar_pln = 4;
             arp_hder->ar_op = htons(arp_op_request);
-            memcpy(arp_hder->ar_sha, interface->addr, ETHER_ADDR_LEN);
-            arp_hder->ar_sip = interface->ip;
+            memcpy(arp_hder->ar_sha, tar_interface->addr, ETHER_ADDR_LEN);
+            arp_hder->ar_sip = tar_interface->ip;
             memcpy(arp_hder->ar_tha, 0xff, ETHER_ADDR_LEN);
             arp_hder->ar_tip = dest_ip;
-            int res = sr_send_packet(sr, packet, packet_size, interface->name);
+            int res = sr_send_packet(sr, packet, packet_size, tar_interface->name);
             print_hdrs(packet, packet_size);
             free(packet);
-            sr_send_packet(sr, packet, packet_size, interface->name);
+            sr_send_packet(sr, packet, packet_size, tar_interface->name);
             printf("hello\n");
         }
     }
