@@ -59,9 +59,9 @@ void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
             arp_hder->ar_op = htons(arp_op_request);
             memcpy(arp_hder->ar_sha, tar_interface->addr, ETHER_ADDR_LEN);
             arp_hder->ar_sip = tar_interface->ip;
-            memcpy(arp_hder->ar_tha, 0xff, ETHER_ADDR_LEN);
+            memset(arp_hder->ar_tha, 0xff, ETHER_ADDR_LEN);
             arp_hder->ar_tip = dest_ip;
-            int res = sr_send_packet(sr, packet, packet_size, tar_interface->name);
+            sr_send_packet(sr, packet, packet_size, tar_interface->name);
             print_hdrs(packet, packet_size);
             free(packet);
             sr_send_packet(sr, packet, packet_size, tar_interface->name);
