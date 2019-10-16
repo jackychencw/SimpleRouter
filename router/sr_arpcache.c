@@ -20,12 +20,10 @@ void sr_arpcache_sweepreqs(struct sr_instance *sr)
 {
     /* Fill this in */
     struct sr_arpreq *request = sr->cache.requests;
-    while (request)
+    for (request = sr->cache.requests; request; request = request->next)
     {
-        printf("\n\nSweeping requests\n\n\n\n\n");
-        struct sr_arpreq *next = (*request).next;
-        /*handle_arpreq(sr, request);*/
-        request = next;
+        printf("\nSweeping requests\n");
+        sr_send_5_arp_req(sr, request);
     }
 }
 /* You should not need to touch the rest of this code. */
