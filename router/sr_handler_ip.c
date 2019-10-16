@@ -33,8 +33,7 @@ void sr_ip_packet_forward(struct sr_instance *sr,
         memcpy(eth_hdr->ether_shost, src_iface->addr, ETHER_ADDR_LEN);
         eth_hdr->ether_type = htons(ethertype_ip);
         add_ip_header(ip_hdr, len, ip_hdr->ip_hl, ip_hdr->ip_v, ip_hdr->ip_tos, ip_hdr->ip_p, src_iface->ip, ip_hdr->ip_dst);
-        sr_arpcache_queuereq(&sr->cache, )
-            sr_send_packet(sr, packet, len, src_iface->name);
+        sr_send_packet(sr, packet, len, src_iface->name);
         if (ip_sanity_check(ip_hdr, len))
         {
             printf("passed\n\n\n\n");
