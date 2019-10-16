@@ -8,6 +8,7 @@ sr_icmp_hdr_t *get_icmp_hdr(uint8_t *buf);
 sr_icmp_t3_hdr_t *get_icmp_t3_hdr(uint8_t *buf);
 uint8_t arp_sanity_check(unsigned int frame_len);
 uint8_t ip_sanity_check(sr_ip_hdr_t *ip_hdr, unsigned int len);
+uint8_t icmp_sanity_check(sr_ip_hdr_t *ip_hdr, sr_icmp_hdr_t *icmp_hdr, unsigned int len);
 void add_ethernet_header(sr_ethernet_hdr_t *eth_hdr, uint8_t *tha, uint8_t *sha, uint16_t packet_type);
 void add_ip_header(sr_ip_hdr_t *ip_hdr,
                    unsigned int len,

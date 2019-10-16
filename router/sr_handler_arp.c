@@ -76,6 +76,7 @@ uint8_t *create_arp_packet(uint8_t *sha, uint32_t sip, uint8_t *tha, uint32_t ti
 
 void sr_handle_arp_op_req(struct sr_instance *sr, sr_ethernet_hdr_t *eth_hder, sr_arp_hdr_t *arp_hder, struct sr_if *interface)
 {
+    printf("Simple router handling arp request...\n");
     unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
     uint8_t *reply_packet = create_arp_packet(interface->addr,  /* sha */
                                               interface->ip,    /* sip */
@@ -91,7 +92,7 @@ void sr_handle_arp_op_rep(struct sr_instance *sr,
                           sr_arp_hdr_t *arp_hdr,
                           struct sr_if *iface)
 {
-    printf("Simple router handling arp request...\n");
+    printf("Simple router handling arp reply...\n");
     struct sr_arpreq *req = sr_arpcache_insert(&(sr->cache), arp_hdr->ar_sha, arp_hdr->ar_sip);
     if (req)
     {
@@ -137,7 +138,6 @@ void sr_handle_arp(struct sr_instance *sr,
     case arp_op_reply:
         printf("Sensed [ARP reply], handling ...\n\n");
         /* Cache it, go through request queue and send it back. */
-        sr_arpcache_insert(&(sr->cache), arp_hdr->ar_sha, arp_hdr->ar_sip);
         sr_handle_arp_op_rep(sr, ethernet_hdr, arp_hdr, iface);
         break;
     default:

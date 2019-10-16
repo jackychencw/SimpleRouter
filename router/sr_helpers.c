@@ -47,6 +47,14 @@ uint8_t ip_sanity_check(sr_ip_hdr_t *ip_hdr, unsigned int len)
     return passed;
 }
 
+uint8_t icmp_sanity_check(sr_ip_hdr_t *ip_hdr, sr_icmp_hdr_t *icmp_hdr, unsigned int len)
+{
+    uint16_t tmp_sum = icmp_hdr->icmp_sum;
+    icmp_hdr->icmp_sum = 0;
+    uint8_t passed = (cksum(icmp_hdr, len - sizeof(sr_ip_hdr_t)) == tmp_sum) && (len >= (sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t) + sizeof(sr_icmp_hdr_t)));
+    return passed;
+}
+
 void add_ethernet_header(sr_ethernet_hdr_t *eth_hdr, uint8_t *tha, uint8_t *sha, uint16_t packet_type)
 {
     memcpy(eth_hdr->ether_shost, sha, ETHER_ADDR_LEN);

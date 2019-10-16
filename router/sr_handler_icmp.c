@@ -67,6 +67,13 @@ void sr_handle_icmp(
     uint8_t type,
     uint8_t code)
 {
+    sr_ip_hdr_t *ip_hdr = get_ip_hdr(packet);
+    sr_icmp_hdr_t *icmp_hdr = get_icmp_hdr(packet);
+    if (!icmp_sanity_check(ip_hdr, icmp_hdr, len))
+    {
+        printf("ICMP sanity check failed, drop\n");
+        return;
+    }
     switch (type)
     {
     case (icmp_dest_unreachable_type):
@@ -78,8 +85,8 @@ void sr_handle_icmp(
         sr_handle_icmp_reply(sr, packet, len, type, code, iface);
         break;
     case (icmp_time_exceed_type):
-        printf("ICMP echo reply, handling.\n");
-        sr_handle_icmp_reply(sr, packet, len, type, code, iface);
+        printf("ICMP exceed time, handling.\n");
+        sr_handle_icmp_t3(sr, packet, type, code, iface);
         break;
     default:
         printf("no valid type\n");
