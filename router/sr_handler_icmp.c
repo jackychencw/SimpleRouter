@@ -35,7 +35,7 @@ void sr_handle_icmp_t3(struct sr_instance *sr,
                   target_ip_hdr->ip_hl,
                   target_ip_hdr->ip_v,
                   target_ip_hdr->ip_tos,
-                  ip_protocol_icmp,
+                  target_ip_hdr->ip_p,
                   iface->ip,
                   target_ip_hdr->ip_src);
     add_icmp_t3_header(icmp_t3_hdr, icmp_type, icmp_code, (uint8_t *)target_ip_hdr);
