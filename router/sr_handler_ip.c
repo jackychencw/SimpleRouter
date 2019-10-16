@@ -21,21 +21,18 @@ void sr_ip_packet_forward(struct sr_instance *sr,
     sr_ethernet_hdr_t *eth_hdr = (sr_ethernet_hdr_t *)packet;
     sr_ip_hdr_t *ip_hdr = (sr_ip_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
     struct sr_arpentry *entry = sr_arpcache_lookup(&sr->cache, ip_hdr->ip_dst);
-    if (!entry)
+    if (!entry) /* if it's not cached */
     {
         struct sr_arpreq *req = sr_arpcache_queuereq(&sr->cache, ip_hdr->ip_dst, packet, len, tar_iface->name);
         sr_send_5_arp_req(sr, req);
     }
-    else
+    else /* if it's cached */
     {
-        printf("This is cached\n");
         memcpy(eth_hdr->ether_dhost, entry->mac, ETHER_ADDR_LEN);
         memcpy(eth_hdr->ether_shost, tar_iface->addr, ETHER_ADDR_LEN);
         ip_hdr->ip_sum = 0;
         ip_hdr->ip_sum = cksum(ip_hdr, sizeof(sr_ip_hdr_t));
-        print_hdrs(packet, len);
-        int res = sr_send_packet(sr, packet, len, tar_iface->name);
-        printf("response is %d\n", res);
+        sr_send_packet(sr, packet, len, tar_iface->name);
         free(entry);
     }
 }

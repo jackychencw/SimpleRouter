@@ -31,12 +31,11 @@ void sr_handle_icmp_t3(struct sr_instance *sr,
     memcpy(eth_hdr->ether_dhost, target_eth_hdr->ether_shost, ETHER_ADDR_LEN);
     memcpy(eth_hdr->ether_shost, tar_iface->addr, ETHER_ADDR_LEN);
     eth_hdr->ether_type = htons(ethertype_ip);
-
     add_ip_header(ip_hdr, packet_size,
                   target_ip_hdr->ip_hl,
                   target_ip_hdr->ip_v,
                   target_ip_hdr->ip_tos,
-                  target_ip_hdr->ip_p,
+                  ip_protocol_icmp,
                   iface->ip,
                   target_ip_hdr->ip_src);
     add_icmp_t3_header(icmp_t3_hdr, icmp_type, icmp_code, (uint8_t *)target_ip_hdr);
