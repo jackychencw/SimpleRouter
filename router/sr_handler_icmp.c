@@ -11,11 +11,11 @@
 #include "sr_helpers.h"
 #include "sr_utils.h"
 
-int sr_handle_icmp_t3(struct sr_instance *sr,
-                      uint8_t *buf,
-                      uint8_t icmp_type,
-                      uint8_t icmp_code,
-                      struct sr_if *iface)
+void sr_handle_icmp_t3(struct sr_instance *sr,
+                       uint8_t *buf,
+                       uint8_t icmp_type,
+                       uint8_t icmp_code,
+                       struct sr_if *iface)
 {
     printf("handling icmp t3\n");
     unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t) + sizeof(sr_icmp_t3_hdr_t);
@@ -41,8 +41,8 @@ int sr_handle_icmp_t3(struct sr_instance *sr,
                   target_ip_hdr->ip_src);
     add_icmp_t3_header(icmp_t3_hdr, icmp_type, icmp_code, (uint8_t *)target_ip_hdr);
     print_hdrs(packet, packet_size);
-    int res = sr_send_packet(sr, packet, packet_size, iface->name);
-    return res;
+    sr_send_packet(sr, packet, packet_size, iface->name);
+    printf("sent\n");
 }
 
 int sr_handle_icmp_reply(struct sr_instance *sr, uint8_t *buf, unsigned int buf_size, uint8_t type, uint8_t code, struct sr_if *iface)

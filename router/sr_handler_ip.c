@@ -61,8 +61,7 @@ void sr_handle_ip(struct sr_instance *sr,
     if (ip_hdr->ip_ttl <= 0)
     {
         printf("ERROR: ip packet ttl expired... \n");
-        sr_handle_icmp_t3(sr, packet, icmp_time_exceed_type, 0, iface);
-
+        sr_handle_icmp_t3(sr, packet, 11, 0, iface);
         return;
     }
     ip_hdr->ip_sum = 0;
@@ -100,10 +99,12 @@ void sr_handle_ip(struct sr_instance *sr,
             if (target_iface)
             {
                 sr_ip_packet_forward(sr, ip_hdr, eth_hdr, packet, len, iface, target_iface);
+                return;
             }
             else
             {
                 sr_handle_icmp_t3(sr, packet, icmp_dest_unreachable_type, icmp_net_unreachable_code, iface);
+                return;
             }
         }
         /*8. if there isn't a match */
@@ -111,6 +112,7 @@ void sr_handle_ip(struct sr_instance *sr,
         {
             /*9. send ICMP net unreachable*/
             sr_handle_icmp_t3(sr, packet, icmp_dest_unreachable_type, icmp_net_unreachable_code, iface);
+            return;
         }
     }
 }
