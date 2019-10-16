@@ -26,11 +26,8 @@ void sr_ip_packet_forward(struct sr_instance *sr,
     struct sr_arpentry *entry = sr_arpcache_lookup(&sr->cache, dest);
     if (!entry)
     {
-        int count;
-        for (count = 0; count < 5; count++)
-        {
-            send_arp_packet(sr, src_iface->addr, src_iface->ip, 0xff, ip_hdr->ip_dst, arp_op_request, src_iface);
-        }
+        struct sr_arpreq *req = sr_arpcache_queuereq(&sr->cache, ip_hdr->ip_dst, packet, len, tar_iface->name);
+        sr_send_5_arp_req(sr, req);
     }
     else
     {
@@ -100,6 +97,10 @@ void sr_handle_ip(struct sr_instance *sr,
             if (target_iface)
             {
                 sr_ip_packet_forward(sr, ip_hdr, eth_hdr, packet, len, iface, target_iface);
+            }
+            else
+            {
+                sr_handle_icmp_t3(sr, packet, icmp_dest_unreachable_type, icmp_net_unreachable_code, iface);
             }
         }
         /*8. if there isn't a match */

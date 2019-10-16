@@ -24,7 +24,7 @@ void sr_arpcache_sweepreqs(struct sr_instance *sr)
     {
         printf("\n\nSweeping requests\n\n\n\n\n");
         struct sr_arpreq *next = (*request).next;
-        handle_arpreq(sr, request);
+        /*handle_arpreq(sr, request);*/
         request = next;
     }
 }

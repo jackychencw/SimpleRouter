@@ -10,8 +10,9 @@
 #include "sr_arpcache.h"
 #include "sr_helpers.h"
 #include "sr_utils.h"
+#include "sr_handler_icmp.h"
 
-void handle_arpreq(struct sr_instance *sr, struct sr_arpreq *request)
+void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
 {
     printf("\n\nhandle_arpreq\n\n");
     time_t now = time(0);
@@ -23,15 +24,19 @@ void handle_arpreq(struct sr_instance *sr, struct sr_arpreq *request)
     {
         if (times_sent >= 5)
         {
-            /* TODO: Send icmp host unreachable to source addr of all pkts waiting on 
-            this request*/
+            struct sr_packet *packet;
+            for (packet = request->packets; packet; packet = packet->next)
+            {
+                struct sr_if *interface = sr_get_interface(sr, packet->iface);
+                sr_handle_icmp_t3(sr, (uint8_t *)packet, icmp_dest_unreachable_type, icmp_host_unreachable_code, interface);
+            }
             sr_arpreq_destroy(&sr->cache, request);
         }
         else
         {
-            /* sr_send_arpreq(sr, request->ip);*/
             request->sent = time(0);
             request->times_sent += 1;
+            printf("Broading a packet, %u times sent.", request->times_sent);
         }
     }
     pthread_mutex_unlock(&sr->cache.lock);

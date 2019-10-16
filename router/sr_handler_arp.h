@@ -8,6 +8,7 @@
 #include "sr_protocol.h"
 #include "sr_arpcache.h"
 
+void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request);
 void handle_arpreq(struct sr_instance *sr, struct sr_arpreq *request);
 struct sr_if *sr_rt_lookup(struct sr_instance *sr, uint32_t dest);
 int send_arp_packet(struct sr_instance *sr, uint8_t *sha, uint32_t sip, uint8_t *tha, uint32_t tip, unsigned short opcode, struct sr_if *interface);
