@@ -14,7 +14,6 @@
 
 void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
 {
-    printf("\n\nhandle_arpreq\n\n");
     time_t now = time(0);
     time_t sent = request->sent;
     uint32_t times_sent = request->times_sent;
@@ -36,7 +35,30 @@ void sr_send_5_arp_req(struct sr_instance *sr, struct sr_arpreq *request)
         {
             request->sent = time(0);
             request->times_sent += 1;
-            printf("Broading a packet, %u times sent.", request->times_sent);
+            int dest_ip = request->ip;
+            struct sr_if *interface = sr_rt_lookup_iface(sr, dest_ip);
+            unsigned int packet_size = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
+            uint8_t *packet = (uint8_t *)malloc(packet_size);
+            sr_ethernet_hdr_t *eth_hder = (sr_ethernet_hdr_t *)packet;
+            sr_arp_hdr_t *arp_hder = (sr_arp_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
+            memset(eth_hder->ether_dhost, 0xff, ETHER_ADDR_LEN);
+            memcpy(eth_hder->ether_shost, interface->addr, ETHER_ADDR_LEN);
+            eth_hder->ether_type = htons(ethertype_arp);
+
+            arp_hder->ar_hrd = htons(arp_hrd_ethernet);
+            arp_hder->ar_pro = htons(ethertype_ip);
+            arp_hder->ar_hln = ETHER_ADDR_LEN;
+            /* Deault ip version is ipv4 */
+            arp_hder->ar_pln = 4;
+            arp_hder->ar_op = htons(arp_op_request);
+            memcpy(arp_hder->ar_sha, interface->addr, ETHER_ADDR_LEN);
+            arp_hder->ar_sip = interface->ip;
+            memcpy(arp_hder->ar_tha, 0xff, ETHER_ADDR_LEN);
+            arp_hder->ar_tip = dest_ip;
+            int res = sr_send_packet(sr, packet, packet_size, interface->name);
+            print_hdrs(packet, packet_size);
+            free(packet);
+            sr_send_packet(sr, packet, packet_size, interface->name);
         }
     }
     pthread_mutex_unlock(&sr->cache.lock);
